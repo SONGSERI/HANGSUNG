@@ -4,7 +4,6 @@
 
 erDiagram
 
-   erDiagram
 
     LOT {
         %% RAW (LOG DIRECT)
