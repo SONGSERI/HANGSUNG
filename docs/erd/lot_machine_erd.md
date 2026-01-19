@@ -1,168 +1,206 @@
-## LOT–Machine ERD
+## ERD
 
 ```mermaid
 
 erDiagram
 
-    LOT {
-        string lot_name PK
-        string product_id
-        int rev
-        string plan_id
-        string machine
-        int stage_no
-        int lane_no
-        string mjs_id
-        datetime report_date
-        int output
-    }
+    LOT
+-------------------------------------------------
+PK  lot_id
+◎  lot_name
+◎  product_id
+◎  rev
+◎  plan_id
+◎  machine
+◎  stage_no
+◎  lane_no
+◎  mjs_id
+◎  report_date
+◎  output_qty
 
-    LOT_TIME_SUMMARY {
-        string lot_name PK
-        float power_on
-        float change_time
-        float prod_view
-        float maintenance
-        float data_edit
-        float unit_adjust
-        float idle_time
-        float prod_time
-        float actual_time
-        float load_time
-        float board_recog_time
-        float mount_time
-        float total_stop_time
+△  work_order
+△  model_code
+△  line_code
+△  shift_code
+△  lot_start_time
+△  lot_end_time
 
-        float f_wait
-        float r_wait
-        float s_wait
-        float c_wait
-        float b_wait
-        float p_wait
+LOT_TIME_SUMMARY
+-------------------------------------------------
+PK  time_id
+FK  lot_id
 
-        float sc_stop
-        float sce_stop
-        float other_stop
-        float conv_stop
-        float brcg_stop
-        float trouble_stop
-        float mhrcg_stop
-        float fb_stop
-        float bndrcg_stop
+◎  power_on_time
+◎  change_time
+◎  prod_view_time
+◎  maintenance_time
+◎  data_edit_time
+◎  unit_adjust_time
+◎  idle_time
+◎  prod_time
+◎  actual_time
+◎  load_time
+◎  board_recog_time
+◎  mount_time
+◎  total_stop_time
 
-        float cp_err
-        float cr_err
-        float cd_err
-        float cm_err
-        float ct_err
-        float trs_err
-        float prd_stop
-        float judge_stop
-        float other_line_stop
-        float bnd_stop
+◎  f_wait_time
+◎  r_wait_time
+◎  s_wait_time
+◎  c_wait_time
+◎  b_wait_time
+◎  p_wait_time
 
-        float mc_fwait
-        float mc_rwait
-        float joint_pass_wait
-        float ppi_stop
-        float simulation
-    }
+◎  sc_stop_time
+◎  sce_stop_time
+◎  other_stop_time
+◎  conv_stop_time
+◎  brcg_stop_time
+◎  trouble_time
+◎  mhrcg_stop_time
+◎  fb_stop_time
+◎  bndrcg_stop_time
 
-    LOT_CYCLE_TIME {
-        string lot_name PK
-        float cycle_time_1
-        float cycle_time_2
-        float cycle_time_3
-    }
+◎  cp_err_time
+◎  cr_err_time
+◎  cd_err_time
+◎  cm_err_time
+◎  ct_err_time
+◎  trs_err_time
+◎  prd_stop_time
+◎  judge_stop_time
+◎  other_line_stop_time
+◎  bnd_stop_time
 
-    LOT_COUNT_SUMMARY {
-        string lot_name PK
-        int board_cnt
-        int module_cnt
+◎  mc_fwait_time
+◎  mc_rwait_time
+◎  joint_pass_wait_time
+◎  ppi_stop_time
+◎  simulation_time
 
-        int f_wait_cnt
-        int r_wait_cnt
-        int s_wait_cnt
-        int c_wait_cnt
-        int b_wait_cnt
-        int p_wait_cnt
+△  planned_time
+△  availability_rate
+△  performance_rate
+△  oee
 
-        int sc_stop_cnt
-        int sce_stop_cnt
-        int other_stop_cnt
-        int conv_stop_cnt
-        int brcg_stop_cnt
-        int trouble_cnt
-        int mhrcg_stop_cnt
-        int fb_stop_cnt
-        int bndrcg_stop_cnt
+LOT_CYCLE_TIME
+-------------------------------------------------
+PK  cycle_id
+FK  lot_id
 
-        int cp_err_cnt
-        int cr_err_cnt
-        int cd_err_cnt
-        int cm_err_cnt
-        int ct_err_cnt
-        int trs_err_cnt
+◎  cycle_time_1
+◎  cycle_time_2
+◎  cycle_time_3
 
-        int total_pickup
-        int pickup_miss
-        int retry_miss
-        int drop_miss
-        int mount_miss
-        int head_miss
-        int trs_miss
+LOT_COUNT_SUMMARY
+-------------------------------------------------
+PK  count_id
+FK  lot_id
 
-        int lot_board
-        int lot_module
+◎  board_cnt
+◎  module_cnt
 
-        int mc_fwait_cnt
-        int mc_rwait_cnt
-        int joint_pass_wait_cnt
+◎  f_wait_cnt
+◎  r_wait_cnt
+◎  s_wait_cnt
+◎  c_wait_cnt
+◎  b_wait_cnt
+◎  p_wait_cnt
 
-        int total_mount
-        int ppi_stop_cnt
-        int ppi_err_cnt
-    }
+◎  sc_stop_cnt
+◎  sce_stop_cnt
+◎  other_stop_cnt
+◎  conv_stop_cnt
+◎  brcg_stop_cnt
+◎  trouble_cnt
+◎  mhrcg_stop_cnt
+◎  fb_stop_cnt
+◎  bndrcg_stop_cnt
 
-    LOT_RESOURCE_USAGE {
-        string lot_name PK
-        string resource_type PK   "FEEDER / NOZZLE"
-        string resource_code PK
+◎  cp_err_cnt
+◎  cr_err_cnt
+◎  cd_err_cnt
+◎  cm_err_cnt
+◎  ct_err_cnt
+◎  trs_err_cnt
 
-        int head_no
-        int feeder_addr
-        int feeder_slot
-        string part_no
+◎  total_pickup_cnt
+◎  pickup_miss_cnt
+◎  retry_miss_cnt
+◎  drop_miss_cnt
+◎  mount_miss_cnt
+◎  head_miss_cnt
+◎  trs_miss_cnt
 
-        int pickup_cnt
-        int p_miss
-        int r_miss
-        int d_miss
-        int m_miss
-        int h_miss
-        int trs_miss
-        int mount_cnt
-        int ppi_err
-    }
+◎  lot_board_cnt
+◎  lot_module_cnt
 
-    LOT_INSPECTION {
-        string lot_name PK
-        int bad_board
-        int bad_block
-        int bad_parts
-        int ok_parts
-        int retry_board
+◎  mc_fwait_cnt
+◎  mc_rwait_cnt
+◎  joint_pass_wait_cnt
 
-        int lot_block
-        int lot_bad_board
-        int lot_bad_block
-        int lot_bad_parts
-        int lot_ok_parts
-        int lot_retry_board
-    }
+◎  total_mount_cnt
+◎  ppi_stop_cnt
+◎  ppi_err_cnt
 
-    LOT ||--|| LOT_TIME_SUMMARY : has
-    LOT ||--|| LOT_COUNT_SUMMARY : has
-    LOT ||--|| LOT_CYCLE_TIME : has
-    LOT ||--o{ LOT_RESOURCE_USAGE : uses
-    LOT ||--|| LOT_INSPECTION : inspects
+△  good_cnt
+△  reject_cnt
+△  yield_rate
+
+LOT_RESOURCE_USAGE
+-------------------------------------------------
+PK  resource_id
+FK  lot_id
+
+◎  resource_type        -- FEEDER / NOZZLE
+◎  head_no
+◎  feeder_addr
+◎  feeder_slot
+◎  nozzle_no
+◎  resource_serial
+◎  part_no
+◎  library_name
+
+◎  pickup_cnt
+◎  p_miss_cnt
+◎  r_miss_cnt
+◎  d_miss_cnt
+◎  m_miss_cnt
+◎  h_miss_cnt
+◎  trs_miss_cnt
+◎  mount_cnt
+◎  ppi_err_cnt
+
+△  error_type
+△  error_code
+△  first_error_time
+△  last_error_time
+△  usage_time
+
+
+LOT_INSPECTION
+-------------------------------------------------
+PK  inspect_id
+FK  lot_id
+
+◎  bad_board_cnt
+◎  bad_block_cnt
+◎  bad_parts_cnt
+◎  ok_parts_cnt
+◎  retry_board_cnt
+
+◎  lot_block_cnt
+◎  lot_bad_board_cnt
+◎  lot_bad_block_cnt
+◎  lot_bad_parts_cnt
+◎  lot_ok_parts_cnt
+◎  lot_retry_board_cnt
+
+LOT
+ ├─ 1:1 → LOT_TIME_SUMMARY
+ ├─ 1:1 → LOT_COUNT_SUMMARY
+ ├─ 1:1 → LOT_CYCLE_TIME
+ ├─ 1:1 → LOT_INSPECTION
+ └─ 1:N → LOT_RESOURCE_USAGE
+
+
