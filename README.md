@@ -3,16 +3,16 @@
 ## 1. 개요
 
 * 대상 설비
-  Panasonic SMT Chip Mounter (NPM 계열)
+  - Panasonic SMT Chip Mounter (NPM 계열)
 
 * 대상 로그
   - ProductReport 
 
 * 원칙
 
-  * LOG 파일 1개 = LOT 1개
-  * LOT 기준으로 모든 데이터 수집
-  * 로그는 LOT 종료 후 생성되는 집계 로그 (실시간 데이터 아님)
+  - LOG 파일 1개 = LOT 1개
+  - LOT 기준으로 모든 데이터 수집
+  - 로그는 LOT 종료 후 생성되는 집계 로그 (실시간 데이터 아님)
 
 ---
 
