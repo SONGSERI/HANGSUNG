@@ -4,7 +4,32 @@
 
 erDiagram
 
-    LOT_TIME_METRIC {
+   erDiagram
+
+    LOT {
+        %% RAW (LOG DIRECT)
+        string lot_name PK
+        string product_id
+        int rev
+        string plan_id
+        string machine
+        int stage_no
+        int lane_no
+        string mjs_id
+        datetime report_date
+        int output_qty
+
+        %% EXTENSION (FUTURE)
+        string work_order
+        string model_code
+        string line_code
+        string shift_code
+        datetime lot_start_time
+        datetime lot_end_time
+    }
+
+
+    TIME_METRIC {
         %% RAW (LOG DIRECT)
         float power_on_time
         float change_time
@@ -62,7 +87,7 @@ erDiagram
     }
 
 
-    LOT_COUNT_METRIC {
+    COUNT_METRIC {
         %% RAW (LOG DIRECT)
         int board_cnt
         int module_cnt
@@ -117,7 +142,7 @@ erDiagram
     }
 
 
-    LOT_CYCLE_STAT {
+    CYCLE_STAT {
         %% RAW (LOG DIRECT)
         float cycle_time_1
         float cycle_time_2
@@ -129,7 +154,7 @@ erDiagram
     }
 
 
-    LOT_RESOURCE_METRIC {
+    RESOURCE_METRIC {
         %% RAW (LOG DIRECT)
         string resource_type
         int head_no
@@ -157,7 +182,7 @@ erDiagram
     }
 
 
-    LOT_QUALITY_SUMMARY {
+    QUALITY_SUMMARY {
         %% RAW (LOG DIRECT)
         int bad_board_cnt
         int bad_block_cnt
@@ -177,6 +202,14 @@ erDiagram
         float part_yield
         float retry_ratio
     }
+
+
+    LOT ||--|| TIME_METRIC : has
+    LOT ||--|| COUNT_METRIC : has
+    LOT ||--|| CYCLE_STAT : has
+    LOT ||--|| QUALITY_SUMMARY : has
+    LOT ||--o{ RESOURCE_METRIC : uses
+
 
 
 
