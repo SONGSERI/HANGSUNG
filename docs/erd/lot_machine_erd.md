@@ -1,3 +1,6 @@
+# LOT – Machine ERD
+
+```mermaid
 erDiagram
     LOT {
         string lot_id PK
@@ -66,6 +69,5 @@ erDiagram
     LOT ||--o{ ERROR_SUMMARY : has
     LOT ||--o{ MACHINE_PRODUCTION : has
     LOT ||--o{ PICKUP_STAT_MACHINE : has
-
     MACHINE_PRODUCTION ||--o{ MACHINE_STOP_DETAIL : generates
     MACHINE_PRODUCTION ||--o{ PICKUP_STAT_FEEDER : contains
