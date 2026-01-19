@@ -4,9 +4,9 @@
 
 ## 1. 개요
 
-- 대상 설비: NPM
+- 대상 설비: ??
 - 대상 로그: ProductReport
-- 기본 원칙  
+- 원칙  
   - LOG 파일 1개 = LOT 1개  
   - LOT 기준으로 모든 데이터 수집
 
@@ -109,7 +109,14 @@ erDiagram
 
 ## 4. LOG 파싱 규칙
 
-### 4.1 공통
+### 4.1 파일 이름
+- Production Report 
+  파일이름 [Timestamp]-[Machine]-[Stage]-[Lane]-[Head]-[LotName].[LogType]
+  20260116000000391-05-1-1-3-NAD_H_T_EBR37416101.u01
+- 
+
+
+### 4.2 공통
 
 - [Section] 단위 파싱
 - Key=Value 형식 사용
@@ -118,7 +125,7 @@ erDiagram
 
 ---
 
-### 4.2 Header / Summary 영역
+### 4.3 Header / Summary 영역
 
 대상 섹션
 ```
@@ -134,7 +141,7 @@ erDiagram
 
 ---
 
-### 4.3 Feeder / Nozzle 영역
+### 4.4 Feeder / Nozzle 영역
 
 대상 섹션
 ```
@@ -148,7 +155,7 @@ erDiagram
 
 ---
 
-### 4.4 STOP 데이터 처리
+### 4.5 STOP 데이터 처리
 
 LOG 예시
 ```
@@ -170,8 +177,3 @@ SCStop=2
 
 ---
 
-## 5. 요약
-
-- 본 구조는 로그 분석용 데이터 모델
-- LOT 기준으로 시간 / 수량 / 정지 / Feeder / Nozzle 분석 가능
-- MES, AI 분석으로 확장 가능
