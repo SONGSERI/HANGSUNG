@@ -19,7 +19,6 @@
 - Production Report 
   파일이름 [Timestamp]-[Machine]-[Stage]-[Lane]-[Head]-[LotName].[LogType]
   20260116000000391-05-1-1-3-NAD_H_T_EBR37416101.u01
-- 
 
 
 ### 2.2 공통
