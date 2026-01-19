@@ -4,10 +4,10 @@
 
 erDiagram
 
-
     LOT {
-        %% RAW (LOG DIRECT)
         string lot_name PK
+
+        %% RAW
         string product_id
         int rev
         string plan_id
@@ -18,7 +18,7 @@ erDiagram
         datetime report_date
         int output_qty
 
-        %% EXTENSION (FUTURE)
+        %% FUTURE
         string work_order
         string model_code
         string line_code
@@ -29,7 +29,9 @@ erDiagram
 
 
     TIME_METRIC {
-        %% RAW (LOG DIRECT)
+        string lot_name PK, FK
+
+        %% RAW
         float power_on_time
         float change_time
         float prod_view_time
@@ -78,7 +80,7 @@ erDiagram
         float ppi_stop_time
         float simulation_time
 
-        %% CALCULATED (ANALYSIS)
+        %% ★ CALCULATED (ANALYSIS)
         float run_ratio
         float stop_ratio
         float mount_ratio
@@ -87,7 +89,9 @@ erDiagram
 
 
     COUNT_METRIC {
-        %% RAW (LOG DIRECT)
+        string lot_name PK, FK
+
+        %% RAW
         int board_cnt
         int module_cnt
 
@@ -134,7 +138,7 @@ erDiagram
         int ppi_stop_cnt
         int ppi_err_cnt
 
-        %% CALCULATED (ANALYSIS)
+        %% ★ CALCULATED (ANALYSIS)
         float pickup_miss_rate
         float mount_yield
         float retry_rate
@@ -142,19 +146,24 @@ erDiagram
 
 
     CYCLE_STAT {
-        %% RAW (LOG DIRECT)
+        string lot_name PK, FK
+
+        %% RAW
         float cycle_time_1
         float cycle_time_2
         float cycle_time_3
 
-        %% CALCULATED (ANALYSIS)
+        %% ★ CALCULATED (ANALYSIS)
         float cycle_avg
         float cycle_std
     }
 
 
     RESOURCE_METRIC {
-        %% RAW (LOG DIRECT)
+        int resource_id PK
+        string lot_name FK
+
+        %% RAW
         string resource_type
         int head_no
         int feeder_addr
@@ -174,7 +183,7 @@ erDiagram
         int mount_cnt
         int ppi_err_cnt
 
-        %% CALCULATED (ANALYSIS)
+        %% ★ CALCULATED (ANALYSIS)
         float miss_rate
         float efficiency
         int total_error_cnt
@@ -182,7 +191,9 @@ erDiagram
 
 
     QUALITY_SUMMARY {
-        %% RAW (LOG DIRECT)
+        string lot_name PK, FK
+
+        %% RAW
         int bad_board_cnt
         int bad_block_cnt
         int bad_parts_cnt
@@ -196,7 +207,7 @@ erDiagram
         int lot_ok_parts_cnt
         int lot_retry_board_cnt
 
-        %% CALCULATED (ANALYSIS)
+        %% ★ CALCULATED (ANALYSIS)
         float board_yield
         float part_yield
         float retry_ratio
