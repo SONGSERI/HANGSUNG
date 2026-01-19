@@ -6,7 +6,7 @@
   Panasonic SMT Chip Mounter (NPM 계열)
 
 * 대상 로그
-  - ProductReport (확장자: `.u01`)
+  - ProductReport 
 
 * 원칙
 
