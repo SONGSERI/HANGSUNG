@@ -2,57 +2,53 @@
 
 ```mermaid
 
-
 erDiagram
-
-    EQUIPMENT {
-        string equipment_code PK
-        string equipment_type
-        string model
-        string serial_no
-    }
-
-    STAGE {
-        string equipment_code PK
-        int stage_no PK
-    }
-
-    LANE {
-        string equipment_code PK
-        int stage_no PK
-        int lane_no PK
-        string lane_side
-    }
 
     LOT {
         string lot_name PK
-        string equipment_code FK
-        int stage_no FK
-        int lane_no FK
+        string product_code
         datetime start_time
         datetime end_time
+        string machine_code
     }
 
-    EQUIPMENT_RESOURCE {
-        string resource_code PK
-        string equipment_code FK
-        string resource_type
-        string model
-        string serial_no
+    MACHINE_CONTEXT {
+        string machine_code PK
+        string machine_model
+        string stage_no
+        string lane_no
+        string lane_side
+    }
+
+    LOT_TIME_SUMMARY {
+        string lot_name PK
+        float prod_time
+        float idle_time
+        float stop_time
+        float mount_time
+        float actual_time
+    }
+
+    LOT_COUNT_SUMMARY {
+        string lot_name PK
+        int board_cnt
+        int module_cnt
+        int pickup_cnt
+        int mount_cnt
+        int pickup_miss_cnt
     }
 
     LOT_RESOURCE_USAGE {
-        string lot_name FK
-        string resource_code FK
+        string lot_name PK
+        string resource_type
+        string resource_code
         int pickup_cnt
         int mount_cnt
-        int error_cnt
+        int miss_cnt
     }
 
-    EQUIPMENT ||--o{ STAGE : has
-    STAGE ||--o{ LANE : has
-    LANE ||--o{ LOT : produces
+    LOT ||--|| MACHINE_CONTEXT : runs_on
+    LOT ||--|| LOT_TIME_SUMMARY : has
+    LOT ||--|| LOT_COUNT_SUMMARY : has
+    LOT ||--o{ LOT_RESOURCE_USAGE : uses
 
-    EQUIPMENT ||--o{ EQUIPMENT_RESOURCE : owns
-    LOT ||--o{ LOT_RESOURCE_USAGE : records
-    EQUIPMENT_RESOURCE ||--o{ LOT_RESOURCE_USAGE : used_in
