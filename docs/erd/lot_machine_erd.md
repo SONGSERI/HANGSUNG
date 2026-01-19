@@ -2,67 +2,63 @@
 
 ```mermaid
 
+
 erDiagram
 
+    EQUIPMENT {
+        int equipment_id PK
+        string equipment_type
+        string model
+        string serial_no
+    }
+
+    STAGE {
+        int stage_id PK
+        int equipment_id FK
+        int stage_no
+        string stage_name
+    }
+
+    LANE {
+        int lane_id PK
+        int stage_id FK
+        int lane_no
+        string lane_side
+    }
+
     LOT {
-        string lot_id
-        string machine
-        string lane
-        string product_id
-        string rev
+        int lot_id PK
+        int equipment_id FK
+        int stage_id FK
+        int lane_id FK
+        string lot_name
         datetime start_time
         datetime end_time
     }
 
-    LOT_TIME_SUMMARY {
-        string lot_id
-        float prod_time
-        float actual_time
-        float total_stop_time
-        float mount_time
-        float rwait_time
+    EQUIPMENT_RESOURCE {
+        int resource_id PK
+        int equipment_id FK
+        string resource_type
+        string model
+        string serial_no
     }
 
-    LOT_COUNT_SUMMARY {
-        string lot_id
-        int board_cnt
-        int module_cnt
-        int total_pickup_cnt
-        int total_mount_cnt
-        int pickup_miss_cnt
-        int retry_miss_cnt
-    }
-
-    LOT_STOP {
-        string lot_id
-        string stop_type
-        float stop_time
-        int stop_count
-    }
-
-    FEEDER_STAT {
-        string lot_id
-        int head_table_no
-        int feeder_no
-        string part_no
+    LOT_RESOURCE_USAGE {
+        int usage_id PK
+        int lot_id FK
+        int resource_id FK
         int pickup_cnt
-        int pmiss_cnt
-        int rmiss_cnt
         int mount_cnt
+        int error_cnt
     }
 
-    NOZZLE_STAT {
-        string lot_id
-        int head_no
-        string nozzle_no
-        int pickup_cnt
-        int pmiss_cnt
-        int mount_cnt
-    }
+    EQUIPMENT ||--o{ STAGE : has
+    STAGE ||--o{ LANE : has
+    LANE ||--o{ LOT : produces
 
-    LOT ||--|| LOT_TIME_SUMMARY : has
-    LOT ||--|| LOT_COUNT_SUMMARY : has
-    LOT ||--o{ LOT_STOP : has
-    LOT ||--o{ FEEDER_STAT : has
-    LOT ||--o{ NOZZLE_STAT : has
+    EQUIPMENT ||--o{ LOT : runs
+    EQUIPMENT ||--o{ EQUIPMENT_RESOURCE : owns
 
+    LOT ||--o{ LOT_RESOURCE_USAGE : records
+    EQUIPMENT_RESOURCE ||--o{ LOT_RESOURCE_USAGE : used_in
