@@ -5,6 +5,11 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import matplotlib
 
+FONT_PATH = os.path.join(os.path.dirname(__file__), "fonts", "NanumGothic.ttf")
+
+font_prop = fm.FontProperties(fname=FONT_PATH)
+matplotlib.rcParams["font.family"] = font_prop.get_name()
+matplotlib.rcParams["axes.unicode_minus"] = False
 
 # ============================================================
 # Page Config
