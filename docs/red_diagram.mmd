@@ -1,0 +1,73 @@
+## ERD
+
+```mermaid
+
+erDiagram
+    LOT ||--o{ MACHINE_RUN : has
+    MACHINE_RUN ||--|| MACHINE_TIME_SUMMARY : summarizes
+    MACHINE_RUN ||--|| MACHINE_STOP_SUMMARY : summarizes
+    MACHINE_RUN ||--|| PRODUCTION_QUALITY_SUMMARY : summarizes
+
+    LOT {
+        bigint lot_id PK
+        varchar product_id
+        int product_rev
+        varchar plan_id
+        varchar lot_name
+        int lot_no
+        int stage_no
+        int lane_no
+        int output_qty
+        int lot_board_qty
+        int lot_module_qty
+    }
+
+    MACHINE_RUN {
+        bigint run_id PK
+        bigint lot_id FK
+        varchar machine_id
+        int stage_no
+        int lane_no
+        timestamp collect_time
+    }
+
+    MACHINE_TIME_SUMMARY {
+        bigint run_id PK, FK
+        float power_on_sec
+        float prod_time_sec
+        float actual_run_sec
+        float idle_sec
+        float mount_sec
+        float load_sec
+        float brcg_sec
+        float total_stop_sec
+        float front_wait_sec
+        float rear_wait_sec
+        float program_wait_sec
+        float mc_front_wait_sec
+    }
+
+    MACHINE_STOP_SUMMARY {
+        bigint run_id PK, FK
+        float safety_stop_sec
+        int safety_stop_cnt
+        float pickup_err_stop_sec
+        int pickup_err_cnt
+        float recog_err_stop_sec
+        int recog_err_cnt
+        float prod_related_stop_sec
+        float other_stop_sec
+    }
+
+    PRODUCTION_QUALITY_SUMMARY {
+        bigint run_id PK, FK
+        int board_cnt
+        int module_cnt
+        bigint total_pickup_cnt
+        bigint total_mount_cnt
+        int pickup_miss_cnt
+        int recog_miss_cnt
+    }
+
+
+
