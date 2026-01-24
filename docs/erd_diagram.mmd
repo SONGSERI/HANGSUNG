@@ -1,7 +1,3 @@
-## ERD
-
-```mermaid
-
 erDiagram
     LOT ||--o{ MACHINE_RUN : has
     MACHINE_RUN ||--|| MACHINE_TIME_SUMMARY : summarizes
@@ -9,66 +5,62 @@ erDiagram
     MACHINE_RUN ||--|| PRODUCTION_QUALITY_SUMMARY : summarizes
 
     LOT {
-        lot_id bigint
-        product_id string
-        product_rev int
-        plan_id string
-        lot_name string
-        lot_no int
-        stage_no int
-        lane_no int
-        output_qty int
-        lot_board_qty int
-        lot_module_qty int
+        bigint lot_id
+        string product_id
+        int product_rev
+        string plan_id
+        string lot_name
+        int lot_no
+        int stage_no
+        int lane_no
+        int output_qty
+        int lot_board_qty
+        int lot_module_qty
     }
 
     MACHINE_RUN {
-        run_id bigint
-        lot_id bigint
-        machine_id string
-        stage_no int
-        lane_no int
-        collect_time datetime
+        bigint run_id
+        bigint lot_id
+        string machine_id
+        int stage_no
+        int lane_no
+        datetime collect_time
     }
 
     MACHINE_TIME_SUMMARY {
-        run_id bigint
-        power_on_sec float
-        prod_time_sec float
-        actual_run_sec float
-        idle_sec float
-        mount_sec float
-        load_sec float
-        brcg_sec float
-        total_stop_sec float
-        front_wait_sec float
-        rear_wait_sec float
-        program_wait_sec float
-        mc_front_wait_sec float
+        bigint run_id
+        float power_on_sec
+        float prod_time_sec
+        float actual_run_sec
+        float idle_sec
+        float mount_sec
+        float load_sec
+        float brcg_sec
+        float total_stop_sec
+        float front_wait_sec
+        float rear_wait_sec
+        float program_wait_sec
+        float mc_front_wait_sec
     }
 
     MACHINE_STOP_SUMMARY {
-        run_id bigint
-        safety_stop_sec float
-        safety_stop_cnt int
-        pickup_err_stop_sec float
-        pickup_err_cnt int
-        recog_err_stop_sec float
-        recog_err_cnt int
-        prod_related_stop_sec float
-        other_stop_sec float
+        bigint run_id
+        float safety_stop_sec
+        int safety_stop_cnt
+        float pickup_err_stop_sec
+        int pickup_err_cnt
+        float recog_err_stop_sec
+        int recog_err_cnt
+        float prod_related_stop_sec
+        float other_stop_sec
     }
 
     PRODUCTION_QUALITY_SUMMARY {
-        run_id bigint
-        board_cnt int
-        module_cnt int
-        total_pickup_cnt bigint
-        total_mount_cnt bigint
-        pickup_miss_cnt int
-        recog_miss_cnt int
+        bigint run_id
+        int board_cnt
+        int module_cnt
+        bigint total_pickup_cnt
+        bigint total_mount_cnt
+        int pickup_miss_cnt
+        int recog_miss_cnt
     }
-
-
-
-
