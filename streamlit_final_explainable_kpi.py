@@ -8,10 +8,10 @@ import matplotlib
 # ============================================================
 # 한글 폰트 (macOS)
 # ============================================================
-font_path = "/System/Library/Fonts/Supplemental/AppleGothic.ttf"
-font_prop = fm.FontProperties(fname=font_path)
-matplotlib.rcParams["font.family"] = font_prop.get_name()
-matplotlib.rcParams["axes.unicode_minus"] = False
+# font_path = "/System/Library/Fonts/Supplemental/AppleGothic.ttf"
+# font_prop = fm.FontProperties(fname=font_path)
+# matplotlib.rcParams["font.family"] = font_prop.get_name()
+# matplotlib.rcParams["axes.unicode_minus"] = False
 
 st.set_page_config(page_title="SMT 설비 정지 KPI 분석", layout="wide")
 
