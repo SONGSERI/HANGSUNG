@@ -1,4 +1,4 @@
-# Possible Analysis Using Parsed Data Structure
+# 데이터 분석 컨텐츠
 
 본 항목은 현재 정의된 데이터 구조(LOT, MACHINE_RUN 및 요약 테이블)를 기반으로  
 수행 가능한 분석 범위를 정리한 것이다.  
