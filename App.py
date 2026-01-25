@@ -16,7 +16,7 @@ n_lot = 180
 df = pd.DataFrame({
     "Lot": np.arange(1, n_lot + 1),
     "Prod": np.random.uniform(16000, 19000, n_lot),
-    "Actual": np.random.uniform(10000, 17000, n_ㅁlot),
+    "Actual": np.random.uniform(10000, 17000, n_lot),
     "Fwait": np.random.uniform(300, 5000, n_lot),
     "TotalStop": np.random.uniform(300, 2000, n_lot),
     "TPickup": np.random.randint(30000, 42000, n_lot),
