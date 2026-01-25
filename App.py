@@ -1,197 +1,203 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.font_manager as fm
-import matplotlib
-import os
+import plotly.graph_objects as go
+import plotly.express as px
 
-FONT_PATH = os.path.join(os.path.dirname(__file__), "fonts", "NanumGothic.ttf")
 
-font_prop = fm.FontProperties(fname=FONT_PATH)
-matplotlib.rcParams["font.family"] = font_prop.get_name()
-matplotlib.rcParams["axes.unicode_minus"] = False
+st.set_page_config(page_title="SMT Analysis Report – Explanation Locked", layout="wide")
 
-# ============================================================
-# Page Config
-# ============================================================
-st.set_page_config(page_title="SMT 설비 정지 운영 분석", layout="wide")
-
-# ============================================================
-# Demo 데이터 (고객 DB 가정)
-# ============================================================
+# ==================================================
+# Data
+# ==================================================
 np.random.seed(42)
+n_lot = 180
+
 df = pd.DataFrame({
-    "설비": [f"M{i}" for i in range(1, 9)],
-    "라인": ["L1"] * 8,
-    "CPErr": np.random.randint(3, 30, 8),
-    "CRErr": np.random.randint(2, 20, 8),
-    "CPErrStop": np.random.randint(300, 2500, 8),
-    "CRErrStop": np.random.randint(200, 2000, 8),
-    "PRDStop": np.random.randint(500, 5000, 8),
-    "AlarmCnt": np.random.randint(20, 200, 8),
-    "Prod": np.random.randint(20000, 45000, 8),
+    "Lot": np.arange(1, n_lot + 1),
+    "Prod": np.random.uniform(16000, 19000, n_lot),
+    "Actual": np.random.uniform(10000, 17000, n_ㅁlot),
+    "Fwait": np.random.uniform(300, 5000, n_lot),
+    "TotalStop": np.random.uniform(300, 2000, n_lot),
+    "TPickup": np.random.randint(30000, 42000, n_lot),
 })
 
-# ============================================================
-# KPI 계산 (Single Source of Truth)
-# ============================================================
-df["총 정지 시간"] = df["CPErrStop"] + df["CRErrStop"] + df["PRDStop"]
-df["정지 횟수"] = df["CPErr"] + df["CRErr"]
-df["평균 정지 시간"] = df["총 정지 시간"] / df["정지 횟수"]
+df["CPErr"] = np.random.poisson(3, n_lot)
+df["CRErr"] = np.random.poisson(2, n_lot)
 
-df["Z"] = (df["총 정지 시간"] - df["총 정지 시간"].mean()) / df["총 정지 시간"].std()
-df["ADI"] = df["AlarmCnt"] / df["Prod"]
-df["PRDI"] = (df["정지 횟수"] * df["평균 정지 시간"]) / df["Prod"]
-df["NRSR"] = (df["CPErrStop"] + df["CRErrStop"]) / df["총 정지 시간"]
-df["SSI"] = df["평균 정지 시간"] / df["Prod"]
+df.loc[40:70, "Fwait"] += 2500
+df.loc[80:100, "CPErr"] += 12
+df.loc[120:135, "CRErr"] += 10
 
-def pct(val, series):
-    return int((series < val).mean() * 100)
+df["TPMiss"] = df["CPErr"]
+df["TRMiss"] = df["CRErr"]
+df["MissRate"] = (df["TPMiss"] + df["TRMiss"]) / df["TPickup"]
 
-# ============================================================
-# Sidebar – 검색조건 (데이터 범위만)
-# ============================================================
-st.sidebar.title("검색조건")
-라인 = st.sidebar.multiselect("라인", df["라인"].unique(), default=df["라인"].unique())
-설비 = st.sidebar.multiselect("설비", df["설비"].unique(), default=df["설비"].unique())
+# ==================================================
+# Quality anomaly logic (used for explanation context)
+# ==================================================
+baseline_window = 30
+baseline_mean = df.loc[:baseline_window, "MissRate"].mean()
 
-fdf = df[df["라인"].isin(라인) & df["설비"].isin(설비)]
+df["BaselineDrift"] = df["MissRate"] - baseline_mean
+df["DeltaMissRate"] = df["MissRate"].diff().fillna(0)
 
-selected = st.sidebar.selectbox("설비 선택 (Drill-down)", fdf["설비"])
-sel = fdf[fdf["설비"] == selected].iloc[0]
+df["PickRatio"] = df["TPMiss"] / (df["TPMiss"] + df["TRMiss"] + 1e-6)
+df["RecoRatio"] = df["TRMiss"] / (df["TPMiss"] + df["TRMiss"] + 1e-6)
 
-# ============================================================
-# Title
-# ============================================================
-st.title("SMT 설비 정지 데이터 기반 운영 분석")
-st.caption("정지 데이터를 KPI로 구조화하여 · 판단 · 대응까지 연결")
+# ==================================================
+# Executive Summary (kept)
+# ==================================================
+prod_score = df["Actual"].sum() / df["Prod"].sum()
+equip_score = 1 - ((df["CPErr"] + df["CRErr"]).sum() / df["TotalStop"].sum())
+quality_score = 1 - (
+    (abs(df["BaselineDrift"]) > df["BaselineDrift"].std()) |
+    (abs(df["DeltaMissRate"]) > df["DeltaMissRate"].std())
+).mean()
 
-# ============================================================
-# KPI 설명 패널 (접기/펼치기)
-# ============================================================
-with st.expander("📌 KPI 설명 및 산출 근거", expanded=False):
-    st.markdown("""
-본 분석은 정지 데이터를 단순 집계하지 않고  
-**설비 관리 판단을 위한 KPI 체계**를 사용합니다.
-""")
+def gauge(title, value):
+    fig = go.Figure(go.Indicator(
+        mode="gauge+number",
+        value=value * 100,
+        title={"text": title},
+        gauge={"axis": {"range": [0, 100]}}
+    ))
+    fig.update_layout(height=220, margin=dict(t=40, b=0))
+    st.plotly_chart(fig, use_container_width=True)
 
-    st.markdown("""
-### 설비 상태 신호 KPI
-**Z-score**  
-- 계산식  
-  Z = (설비 총 정지 시간 − 전체 평균) / 표준편차  
-- 의미  
-  평균 대비 정지가 유독 많은 설비를 선별
-
-**ADI (Alarm Density Index)**  
-- 계산식  
-  ADI = 알람 발생 횟수 / 생산 시간  
-- 의미  
-  멈추지 않아도 내부적으로 불안정한 설비 식별
-""")
-
-    st.markdown("""
-### 운영 영향 KPI
-**PRDI**  
-- 계산식  
-  PRDI = (정지 횟수 × 평균 정지 시간) / 생산 시간  
-- 의미  
-  짧은 정지가 반복되어 생산 리듬을 붕괴시키는 정도
-
-**NRSR**  
-- 계산식  
-  NRSR = 장시간 정지 시간 / 총 정지 시간  
-- 의미  
-  한 번 멈추면 크게 가는 설비 여부
-
-**SSI**  
-- 계산식  
-  SSI = 평균 정지 시간 / 생산 시간  
-- 의미  
-  정지 1회당 생산 영향 민감도
-""")
-
-    st.markdown("""
-모든 판단은 **절대 기준이 아닌 설비 간 상대 비교(퍼센타일)**를 사용합니다.
-""")
-
-# ============================================================
-# ① 설비 이상 탐색
-# ============================================================
-st.header("① 설비 이상 탐색 – 어디를 먼저 볼 것인가")
-
-fig1, ax1 = plt.subplots()
-ax1.bar(fdf["설비"], fdf["Z"])
-ax1.axhline(0, linestyle="--")
-ax1.set_ylabel("Z-score")
-st.pyplot(fig1)
-
-st.markdown("""
-평균 대비 정지가 많은 설비 또는  
-알람 밀도가 높은 설비를 우선 확인 대상으로 선정합니다.
-""")
-
-# ============================================================
-# ② 정지 성격 분석
-# ============================================================
-st.header("② 정지 성격 분석 – 자주 vs 오래")
-
-fig2, ax2 = plt.subplots()
-ax2.scatter(fdf["PRDI"], fdf["SSI"], s=120)
-ax2.set_xlabel("PRDI (리듬 붕괴)")
-ax2.set_ylabel("SSI (정지 민감도)")
-st.pyplot(fig2)
-
-st.markdown("""
-정지가 반복형 문제인지,  
-한 번 발생 시 치명적인 문제인지 구분합니다.
-""")
-
-# ============================================================
-# ③ 원인 구조 분석
-# ============================================================
-st.header("③ 원인 구조 분석 – 왜 이런 KPI가 나왔는가")
-
-fig3, ax3 = plt.subplots()
-ax3.pie(
-    [sel["CPErrStop"], sel["CRErrStop"], sel["PRDStop"]],
-    labels=["Pickup", "Recognition", "Production"],
-    autopct="%1.1f%%"
-)
-ax3.set_title(f"{selected} 정지 사유 구성")
-st.pyplot(fig3)
-
-# ============================================================
-# ④ 운영 영향 평가
-# ============================================================
-st.header("④ 운영 영향 평가 – 얼마나 위험한가")
+st.title("SMT 공정 분석 보고서")
+st.caption("그래프 + 해석 + 인사이트 고정 구조")
 
 c1, c2, c3 = st.columns(3)
-c1.metric("PRDI", f"{sel['PRDI']:.3f}", f"상위 {pct(sel['PRDI'], fdf['PRDI'])}%")
-c2.metric("NRSR", f"{sel['NRSR']:.1%}")
-c3.metric("SSI", f"{sel['SSI']:.4f}", f"상위 {pct(sel['SSI'], fdf['SSI'])}%")
+with c1: gauge("Production Stability", prod_score)
+with c2: gauge("Equipment Stability", equip_score)
+with c3: gauge("Quality Stability", quality_score)
 
-# ============================================================
-# ⑤ 설비 모니터링 & Action
-# ============================================================
-st.header("⑤ 설비 모니터링 및 권장 Action")
+st.markdown("---")
 
-actions = []
+# ==================================================
+# Production Analysis
+# ==================================================
+st.header("1. 생산 분석 – 시간 손실 구조")
 
-if pct(sel["ADI"], fdf["ADI"]) > 70:
-    actions.append("알람 밀도 높음 → 센서/조건/작업 표준 점검")
+sankey = go.Figure(go.Sankey(
+    node=dict(label=["Prod Time", "Actual Run", "Front Wait", "Stop Loss"]),
+    link=dict(
+        source=[0, 0, 0],
+        target=[1, 2, 3],
+        value=[df["Actual"].sum(), df["Fwait"].sum(), df["TotalStop"].sum()]
+    )
+))
+sankey.update_layout(height=420)
+st.plotly_chart(sankey, use_container_width=True)
 
-if pct(sel["PRDI"], fdf["PRDI"]) > 70 and pct(sel["SSI"], fdf["SSI"]) > 70:
-    actions.append("반복 정지로 생산 리듬 붕괴 → 작업 조건 및 프로그램 튜닝")
+st.markdown(
+"""
+**그래프 해석**  
+- 흐름의 두께는 생산 시간이 어디에서 소비되는지를 의미한다.
 
-if sel["NRSR"] > 0.4:
-    actions.append("장시간 정지 비율 높음 → 예방 정비 또는 구조 점검")
+**인사이트**  
+- 생산 손실의 원인이 설비 문제인지, 라인 흐름 문제인지를 구분할 수 있다.
 
-if not actions:
-    actions.append("현재 KPI 기준 특이 사항 없음 → 정상 운영")
+**왜 이런 결과가 나왔는가**  
+- Front Wait 비중이 큰 경우: 앞 공정 투입 불균형 또는 계획 문제  
+- Stop Loss 비중이 큰 경우: 설비 오류, 알람, Pick/Recognition 문제 누적
+"""
+)
 
-for i, a in enumerate(actions, 1):
-    st.markdown(f"**Action {i}.** {a}")
+st.markdown("---")
 
-st.success("정지 데이터 → KPI → 판단 → 대응까지 하나의 흐름으로 연결됩니다.")
+# ==================================================
+# Equipment Analysis
+# ==================================================
+st.header("2. 설비 분석 – Pick / Recognition 오류")
+
+fig_e = px.scatter(df, x="CPErr", y="CRErr", size="CPErr")
+fig_e.update_layout(height=400)
+st.plotly_chart(fig_e, use_container_width=True)
+
+st.markdown(
+"""
+**그래프 해석**  
+- X축은 Pick 오류, Y축은 Recognition 오류 빈도를 의미한다.
+
+**인사이트**  
+- 오류의 집중 영역을 통해 설비 취약 포인트를 파악할 수 있다.
+
+**왜 이런 결과가 나왔는가**  
+- Pick 오류 증가: 자재 품질, 피더, 흡착 조건  
+- Recognition 오류 증가: 조명, 카메라, 라이브러리 설정
+"""
+)
+
+st.markdown("---")
+
+# ==================================================
+# Quality Analysis
+# ==================================================
+st.header("3. 품질 분석 – 이상 탐지")
+
+fig_q1 = go.Figure()
+fig_q1.add_trace(go.Scatter(y=df["MissRate"], mode="lines"))
+fig_q1.add_hline(y=baseline_mean, line_dash="dash")
+fig_q1.update_layout(height=300)
+st.plotly_chart(fig_q1, use_container_width=True)
+
+st.markdown(
+"""
+**그래프 해석**  
+- Miss Rate가 기준선에서 점진적으로 벗어나는지를 확인한다.
+
+**인사이트**  
+- 급격한 불량 이전에 누적되는 품질 리스크를 조기에 감지한다.
+
+**왜 이런 결과가 나왔는가**  
+- 자재 Lot 변경  
+- 노즐/피더 교체 후 조건 미세 변화  
+- 셋업 편차 누적
+"""
+)
+
+st.markdown("---")
+
+fig_q2 = px.scatter(df, x="PickRatio", y="RecoRatio")
+fig_q2.update_layout(height=300)
+st.plotly_chart(fig_q2, use_container_width=True)
+
+st.markdown(
+"""
+**그래프 해석**  
+- Pick 오류와 Recognition 오류 비중 분포를 나타낸다.
+
+**인사이트**  
+- 불량의 양이 아니라 성격 변화를 감지할 수 있다.
+
+**왜 이런 결과가 나왔는가**  
+- Pick 비중 증가: 자재/피더 계열 문제  
+- Recognition 비중 증가: 비전 조건 문제
+"""
+)
+
+st.markdown("---")
+
+fig_q3 = go.Figure()
+fig_q3.add_trace(go.Scatter(y=df["DeltaMissRate"], mode="lines"))
+fig_q3.add_hline(y=df["DeltaMissRate"].std(), line_dash="dot", line_color="red")
+fig_q3.add_hline(y=-df["DeltaMissRate"].std(), line_dash="dot", line_color="red")
+fig_q3.update_layout(height=300)
+st.plotly_chart(fig_q3, use_container_width=True)
+
+st.markdown(
+"""
+**그래프 해석**  
+- Lot 간 품질 변화의 크기를 나타낸다.
+
+**인사이트**  
+- 문제가 시작된 시점을 명확히 특정할 수 있다.
+
+**왜 이런 결과가 나왔는가**  
+- 작업자 교대  
+- 자재 교체  
+- 프로그램 또는 조건 변경
+"""
+)
