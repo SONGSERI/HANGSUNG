@@ -7,6 +7,46 @@ import plotly.express as px
 
 st.set_page_config(page_title="SMT Analysis Report – Explanation Locked", layout="wide")
 
+st.markdown("## 📌 데이터 범위 및 분석 가정 (POC 전제)")
+
+st.markdown("""
+본 분석은 **추가 설비, 추가 센서, 추가 검사 데이터 없이**  
+고객이 현재 수집 중인 **SMT 설비 로그만을 활용**하여 수행됩니다.
+""")
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.markdown("""
+### ▪ 사용 데이터
+- 생산 시간 로그  
+  (Actual / Front Wait / Stop)
+- 설비 오류 로그  
+  (Pick Error / Recognition Error)
+- 생산·품질 수량 정보  
+  (Pickup / Miss Count)
+- Lot 단위 생산 흐름
+""")
+
+with col2:
+    st.markdown("""
+### ▪ 분석 가정 (Assumptions)
+- 초기 Lot 구간은 정상 상태(Baseline)로 가정
+- 설비 조건은 Lot 단위로 유지됨
+- 품질 변화는 Lot 경계에서 발생한다고 가정
+""")
+
+st.markdown("""
+### ▪ 제외 항목
+- AOI / AXI 검사 결과
+- 불량 판정 데이터
+
+> 검사 결과는 **분석 입력값이 아니라,  
+> 분석 결과를 활용하는 대상**으로 사용됩니다.
+""")
+
+
+
 # ==================================================
 # Data
 # ==================================================
