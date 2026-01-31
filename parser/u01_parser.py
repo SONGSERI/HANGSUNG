@@ -2,16 +2,13 @@
 # 시간 / 정지 로그 파싱
 
 from utils import time_to_seconds
+from stop_reason_master import STOP_REASON_MASTER
 
 def parse_machine_time_summary(lines: list[str]) -> dict:
-    """
-    u01 Machine Time Summary 영역 파싱
-    """
     result = {}
 
     for line in lines:
         line = line.strip()
-
         if line.startswith("Power ON Time"):
             result["power_on_time_sec"] = time_to_seconds(line.split()[-1])
         elif line.startswith("Running Time"):
@@ -30,23 +27,32 @@ def parse_machine_time_summary(lines: list[str]) -> dict:
     return result
 
 
-def parse_stop_information(lines: list[str]) -> list[dict]:
-    """
-    Stop information per machine
-    """
-    stops = []
+def parse_stop_information(lines: list[str], file_id: str, lot_machine_id: str) -> list[dict]:
+    stop_logs = []
 
     for line in lines:
         if "Stop Time/Count" not in line:
             continue
 
         name, values = line.split("Stop Time/Count")
-        time_str, count = values.strip().split()
+        stop_name = name.strip().upper()
 
-        stops.append({
-            "stop_reason_name": name.strip(),
-            "duration_sec": time_to_seconds(time_str),
+        time_str, count = values.strip().split()
+        duration = time_to_seconds(time_str)
+
+        reason = STOP_REASON_MASTER.get(
+            stop_name,
+            {"code": "UNKNOWN", "group": "UNKNOWN"}
+        )
+
+        stop_logs.append({
+            "stop_log_id": None,
+            "lot_machine_id": lot_machine_id,
+            "stop_reason_code": reason["code"],
+            "duration_sec": duration,
             "stop_count": int(count),
+            "source_file_id": file_id,
         })
 
-    return stops
+    return stop_logs
+
