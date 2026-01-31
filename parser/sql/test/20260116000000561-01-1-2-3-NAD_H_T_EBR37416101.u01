@@ -1,0 +1,178 @@
+[Index]
+Format=ProductReport
+Version=1.0000
+Machine=NPM
+Date=2026/01/16,00:00:00
+AuthorType=Machine
+Author=
+Diff=
+MJSID="6-TN1R23NC.BCB081-W-HIGH-NAD3-6-2-R-20260109"
+Comment=""
+
+[Information]
+Stage=1
+Lane=2
+Serial=1321659
+SerialStatus=0
+Code=""
+BcrStatus=2
+ProductID="32394"
+Rev=316
+PlanID="0"
+Output=3
+LotName="NAD_H_T_EBR37416101"
+LotNumber=1
+MasterWO=""
+SubWO=""
+
+[Time]
+PowerON=13688.20
+Change=0.00
+ProdView=0.00
+Mente=0.00
+DataEdit=0.00
+UnitAdjust=0.00
+Idle=0.00
+Prod=13688.20
+Actual=11600.48
+Load=395.40
+BRcg=49.71
+Mount=11155.36
+TotalStop=2087.72
+Fwait=0.95
+Rwait=1337.04
+Swait=0.00
+Cwait=0.00
+Bwait=0.00
+Pwait=0.00
+SCStop=4.29
+SCEStop=0.00
+OthrStop=0.00
+CnvStop=0.00
+BRcgStop=0.00
+Trbl=0.00
+MHRcgStop=0.00
+FBStop=0.00
+BNDRcgStop=0.00
+CPErr=662.07
+CRErr=66.84
+CDErr=16.52
+CMErr=0.00
+CTErr=0.00
+TRSErr=0.00
+PRDStop=8560.37
+JudgeStop=0.00
+OtherLStop=0.00
+BNDStop=0.00
+McFwait=0.00
+McRwait=325.22
+JointPassWait=0.00
+PPIStop=0.00
+Simulation=0.00
+
+[CycleTime]
+CTime1=91.75
+CTime2=96.81
+CTime3=92.08
+
+[Count]
+Board=173
+Module=692
+Fwait=2
+Rwait=77
+Swait=0
+Cwait=0
+Bwait=0
+Pwait=0
+SCStop=0
+SCEStop=0
+OthrStop=0
+CnvStop=0
+BRcgStop=0
+Trbl=0
+MHRcgStop=0
+FBStop=0
+BNDRcgStop=0
+CPErr=24
+CRErr=6
+CDErr=1
+CMErr=0
+CTErr=0
+TRSErr=0
+TPickup=88610
+TPMiss=27
+TRMiss=7
+TDMiss=0
+TMMiss=0
+THMiss=0
+TRSMiss=0
+JudgeStop=0
+OtherLStop=0
+BNDStop=0
+TDispense=0
+TPriming=0
+LotBoard=335
+LotModule=1340
+McFwait=0
+McRwait=33
+JointPassWait=0
+TMount=88576
+PPIStop=0
+PPIErr=0
+
+[Dispenser]
+Head NHAdd BLKCode BLKSerial UseN NozzleName BondID UseB BondLibName Dispense Priming PSRErr
+
+[MountPickupFeeder]
+BLKCode BLKSerial UseF PartsName FAdd FSAdd ReelID UseR Pickup PMiss RMiss DMiss MMiss HMiss TRSMiss Mount LName TGSerial Vendor PPIErr
+"FB10" "FA0210ARF431758" 0 "EAE64362102-3" 20010 2 "" 0 8306 1 1 0 0 0 0 8304 "HSD-IVI" "" "" 0
+"FB10" "FA0210AVF613665" 0 "EAE64721501-1" 20011 2 "" 0 5537 1 0 0 0 0 0 5536 "HSD-IVI" "" "" 0
+"FB10" "FA0210AID417583" 0 "EAE64361903" 20012 1 "" 0 4848 4 0 0 0 0 0 4844 "HSD-IVI" "" "" 0
+"FB10" "FA0210APF493754" 0 "EAE64362506" 20007 1 "" 0 4846 2 0 0 0 0 0 4844 "HSD-IVI" "" "" 0
+"FB10" "FA0210AAD404726" 0 "EAE64362102-15" 20008 1 "" 0 8305 1 0 0 0 0 0 8304 "HSD-IVI" "" "" 0
+"FB10" "FA0210AAD404795" 0 "EAE64362102-8" 20009 1 "" 0 8305 1 0 0 0 0 0 8304 "HSD-IVI" "" "" 0
+"FB10" "FA0210AAD404795" 0 "EAE63603201-7" 20009 2 "" 0 8307 2 1 0 0 0 0 8304 "HSD-IVI" "" "" 0
+"FB10" "FA0210ARF431758" 0 "EAE63603201-4" 20010 1 "" 0 8310 5 1 0 0 0 0 8304 "HSD-IVI" "" "" 0
+"FB10" "FA0210APF493754" 0 "EAE64361903-1" 20007 2 "" 0 6922 1 1 0 0 0 0 6920 "HSD-IVI" "" "" 0
+"FB10" "FA0210AAD404726" 0 "EAE64362102-13" 20008 2 "" 0 8304 0 0 0 0 0 0 8304 "HSD-IVI" "" "" 0
+"FB10" "FA0210SAF400213" 0 "EBC64839711" 20006 1 "" 0 2080 3 1 0 0 0 0 2076 "HSD-IVI" "" "" 0
+"FB10" "FA0210SAF400213" 0 "EAE63603105" 20006 2 "" 0 4152 0 0 0 0 0 0 4152 "HSD-IVI" "" "" 0
+"FB10" "FA0210AVF613665" 0 "EAE64464001" 20011 1 "" 0 6923 2 1 0 0 0 0 6920 "HSD-IVI" "" "" 0
+"FB10" "FA0210AID417583" 0 "EAP62887352" 20012 2 "" 0 692 0 0 0 0 0 0 692 "HSD-IVI" "" "" 0
+"FB10" "FA0210APF401370" 0 "EAE64362401" 20013 2 "" 0 692 0 0 0 0 0 0 692 "HSD-IVI" "" "" 0
+"FB10" "FA0210APF401370" 0 "EAP62887358" 20013 1 "" 0 1388 4 0 0 0 0 0 1384 "HSD-IVI" "" "" 0
+"FB10" "FA0210ALF463672" 0 "EAE64362011" 20014 1 "" 0 693 0 1 0 0 0 0 692 "HSD-IVI" "" "" 0
+
+[MountPickupNozzle]
+Head NHAdd NCAdd BLKCode BLKSerial UseR NozzleName Pickup PMiss RMiss DMiss MMiss HMiss TRSMiss Mount PPIErr
+2 5 225 "" "" 0 226 5536 0 0 0 0 0 0 5536 0
+2 7 227 "" "" 0 226 5536 2 0 0 0 0 0 5534 0
+2 8 228 "" "" 0 226 5536 7 2 0 0 0 0 5527 0
+2 13 215 "" "" 0 226 5536 2 0 0 0 0 0 5534 0
+2 15 217 "" "" 0 226 5536 1 0 0 0 0 0 5535 0
+2 16 218 "" "" 0 226 5536 0 2 0 0 0 0 5534 0
+2 11 213 "" "" 0 226 5536 1 0 0 0 0 0 5535 0
+2 14 216 "" "" 0 226 5536 0 0 0 0 0 0 5536 0
+2 6 226 "" "" 0 226 5536 0 0 0 0 0 0 5536 0
+2 2 222 "" "" 0 226 5539 1 0 0 0 0 0 5538 0
+2 1 221 "" "" 0 226 5567 6 1 0 0 0 0 5560 0
+2 3 223 "" "" 0 226 5536 1 0 0 0 0 0 5535 0
+2 4 224 "" "" 0 226 5536 1 0 0 0 0 0 5535 0
+2 12 214 "" "" 0 226 5536 2 0 0 0 0 0 5534 0
+2 9 211 "" "" 0 226 5536 2 1 0 0 0 0 5533 0
+2 10 212 "" "" 0 226 5536 1 1 0 0 0 0 5534 0
+
+[InspectionData]
+Block=0
+BadBoard=0
+BadBlock=0
+BadParts=0
+OKParts=0
+RetryBoard=0
+LotBlock=0
+LotBadBoard=0
+LotBadBlock=0
+LotBadParts=0
+LotOKParts=0
+LotRetryBoard=0
+
