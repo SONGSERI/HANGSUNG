@@ -1,87 +1,68 @@
-# Column Dictionary
+# 📘 Log Data Column Dictionary
 
-본 문서는 SMT 설비 Raw 운전 데이터를 해석하여 구성한
-분석용 데이터셋의 컬럼 정의를 설명한다.
-
----
-
-## LOT
-
-| Column | Type | Description |
-|------|------|-------------|
-| lot_id | bigint | 내부 Lot 식별자 |
-| product_id | varchar | 제품 ID |
-| product_rev | int | 제품 Revision |
-| plan_id | varchar | 생산 계획 ID |
-| lot_name | varchar | Lot 명 |
-| lot_no | int | Lot 번호 |
-| stage_no | int | 생산 Stage |
-| lane_no | int | 생산 Lane |
-| output_qty | int | 출력/계획 수량 |
-| lot_board_qty | int | Lot 기준 Board 수 |
-| lot_module_qty | int | Lot 기준 Module 수 |
+본 문서는 **SMT 설비 로그(u01 / u03) 및 파일명 규칙을 기반으로 생성 가능한 데이터 컬럼 정의서**이다.  
+HTML 리포트는 본 컬럼들의 **집계 결과물**이며, 본 문서에 정의된 컬럼 범위를 초과하지 않는다.
 
 ---
 
-## MACHINE_RUN
+## 1. FILE — 로그 파일 메타데이터
 
-| Column | Type | Description |
-|------|------|-------------|
-| run_id | bigint | 설비 실행 단위 ID |
-| lot_id | bigint | Lot ID (FK) |
-| machine_id | varchar | 설비 ID |
-| stage_no | int | 생산 Stage |
-| lane_no | int | 생산 Lane |
-| collect_time | timestamp | Raw 데이터 수집 시각 |
-
----
-
-## MACHINE_TIME_SUMMARY
-
-| Column | Type | Description |
-|------|------|-------------|
-| run_id | bigint | 실행 ID (PK, FK) |
-| power_on_sec | float | 전원 ON 시간 |
-| prod_time_sec | float | 생산 시간 |
-| actual_run_sec | float | 실제 가동 시간 |
-| idle_sec | float | 유휴 시간 |
-| mount_sec | float | 실장 시간 |
-| load_sec | float | 보드 로딩 시간 |
-| brcg_sec | float | 보드 인식 시간 |
-| total_stop_sec | float | 총 정지 시간 |
-| front_wait_sec | float | 전공정 대기 시간 |
-| rear_wait_sec | float | 후공정 대기 시간 |
-| program_wait_sec | float | 프로그램 대기 시간 |
-| mc_front_wait_sec | float | 설비 전방 대기 시간 |
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| file_id | string (PK) | 파일 내부 식별자 | 시스템 생성 |
+| file_name | string | 원본 로그 파일명 | 파일명 |
+| file_datetime | datetime | 파일 생성 일시 (YYYYMMDD 기준) | 파일명 |
+| file_sequence | int | 일자 내 파일 시퀀스 번호 | 파일명 |
+| line_id | string | 라인 번호 (예: 05) | 파일명 |
+| process_no | int | 공정 번호 | 파일명 |
+| stage_no | int | Stage 번호 | 파일명 |
+| machine_order | int | Machine 순번 (1~N) | 파일명 |
+| lot_name | string | Lot 이름 | 파일명 |
+| file_type | string | 로그 타입 (u01 / u03) | 확장자 |
 
 ---
 
-## MACHINE_STOP_SUMMARY
+## 2. LOT — Lot 정보
 
-| Column | Type | Description |
-|------|------|-------------|
-| run_id | bigint | 실행 ID (PK, FK) |
-| safety_stop_sec | float | 안전 정지 시간 |
-| safety_stop_cnt | int | 안전 정지 횟수 |
-| pickup_err_stop_sec | float | 픽업 에러 정지 시간 |
-| pickup_err_cnt | int | 픽업 에러 횟수 |
-| recog_err_stop_sec | float | 인식 에러 정지 시간 |
-| recog_err_cnt | int | 인식 에러 횟수 |
-| prod_related_stop_sec | float | 생산 관련 정지 시간 |
-| other_stop_sec | float | 기타 정지 시간 |
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| lot_id | string (PK) | Lot 내부 식별자 | 시스템 생성 |
+| lot_name | string | Lot 명 | 파일명 / HTML |
+| start_time | datetime | Lot 시작 시각 | 로그 |
+| end_time | datetime | Lot 종료 시각 | 로그 |
+| lane | string | 생산 Lane | HTML |
 
 ---
 
-## PRODUCTION_QUALITY_SUMMARY
+## 3. MACHINE — 설비 마스터
 
-| Column | Type | Description |
-|------|------|-------------|
-| run_id | bigint | 실행 ID (PK, FK) |
-| board_cnt | int | 처리 보드 수 |
-| module_cnt | int | 처리 모듈 수 |
-| total_pickup_cnt | bigint | 총 픽업 횟수 |
-| total_mount_cnt | bigint | 정상 실장 수 |
-| pickup_miss_cnt | int | 픽업 미스 수 |
-| recog_miss_cnt | int | 인식 미스 수 |
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| machine_id | string (PK) | 설비 식별자 | 시스템 생성 |
+| line_id | string | 라인 번호 | 파일명 |
+| stage_no | int | Stage 번호 | 파일명 |
+| machine_order | int | Machine 순번 | 파일명 |
 
 ---
+
+## 4. LOT_MACHINE — Lot × Machine 실행 단위
+
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| lot_machine_id | string (PK) | Lot-Machine 실행 식별자 | 시스템 생성 |
+| lot_id | string (FK) | Lot 식별자 | LOT |
+| machine_id | string (FK) | Machine 식별자 | MACHINE |
+
+---
+
+## 5. MACHINE_TIME_SUMMARY — 설비 시간 집계
+
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| lot_machine_id | string (FK) | Lot-Machine 식별자 | LOT_MACHINE |
+| power_on_time_sec | int | Power ON 누적 시간(초) | u01 |
+| running_time_sec | int | Running 시간 | u01 |
+| real_running_time_sec | int | 실제 생산 시간 | u01 |
+| total_stop_time_sec | int | 총 정지 시간 | u01 |
+| transfer_time_sec | int | 이송 시간 | u01 |
+| boa
