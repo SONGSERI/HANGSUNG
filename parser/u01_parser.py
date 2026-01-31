@@ -1,4 +1,6 @@
 # u01_parser.py
+# 시간 / 정지 로그 파싱
+
 from utils import time_to_seconds
 
 def parse_machine_time_summary(lines: list[str]) -> dict:
