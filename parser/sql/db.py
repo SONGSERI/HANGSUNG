@@ -1,4 +1,6 @@
-
+# DB: PostgreSQL
+# 드라이버: psycopg2
+# 방식: UPSERT(중복 허용, 재실행 안전)
 
 
 import psycopg2
