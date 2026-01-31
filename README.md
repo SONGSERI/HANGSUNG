@@ -6,6 +6,31 @@
 본 Raw 데이터는 이벤트 로그가 아닌 **설비 운전 결과 요약 데이터**이며,  
 분석 이전에 해석·구조화 단계가 필요하다.
 
+2️⃣ 필드별 해석
+① 20260116000000391
+20260116 : 날짜 (YYYYMMDD)
+000000391 : 당일 시퀀스 번호
+➡ 파일 생성 시점 + 고유 ID
+② 05
+라인(Line) 번호
+➡ Line 05
+③ 1
+공정(Process) 번호
+➡ SMT / Mount 공정 (Stage 1과 매칭됨)
+④ 1
+Stage 번호
+➡ HTML의 Stage 1과 동일
+⑤ 3 / 4
+Machine Order
+➡ Machine 3, Machine 4
+⑥ NAD_H_T_EBR37416101
+Lot Name
+➡ HTML의 Lot information과 1:1 일치
+⑦ .u01 / .u03
+로그 타입 / 채널 구분
+.u01 : 메인 운전·상태·정지 로그
+.u03 : Pick / Error / Component 관련 로그
+➡ 실제로 u01 = 시간/정지, u03 = 품질/픽업 패턴과 일치
 ---
 
 ## 1. Raw 데이터 구조 개요
