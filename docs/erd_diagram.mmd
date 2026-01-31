@@ -1,66 +1,151 @@
 erDiagram
-    LOT ||--o{ MACHINE_RUN : has
-    MACHINE_RUN ||--|| MACHINE_TIME_SUMMARY : summarizes
-    MACHINE_RUN ||--|| MACHINE_STOP_SUMMARY : summarizes
-    MACHINE_RUN ||--|| PRODUCTION_QUALITY_SUMMARY : summarizes
 
+    %% =========================
+    %% FILE : 로그 파일 메타 (파일명이 1급 데이터)
+    %% =========================
+    FILE {
+        string file_id PK "파일 내부 PK"
+        string file_name "원본 로그 파일명"
+        datetime file_datetime "파일명 기준 생성 일시 (YYYYMMDD)"
+        int file_sequence "파일명 내 시퀀스 번호"
+        string line_id "라인 번호 (파일명 05)"
+        int process_no "공정 번호 (파일명 1)"
+        int stage_no "Stage 번호 (파일명 1)"
+        int machine_order "Machine 번호 (파일명 3,4...)"
+        string lot_name "Lot 이름 (파일명)"
+        string file_type "로그 타입 (u01=시간/정지, u03=픽업/에러)"
+    }
+
+    %% =========================
+    %% LOT : Lot 단위 정보
+    %% =========================
     LOT {
-        bigint lot_id
-        string product_id
-        int product_rev
-        string plan_id
-        string lot_name
-        int lot_no
-        int stage_no
-        int lane_no
-        int output_qty
-        int lot_board_qty
-        int lot_module_qty
+        string lot_id PK "Lot 내부 PK"
+        string lot_name "Lot 명"
+        datetime start_time "Lot 시작 시각"
+        datetime end_time "Lot 종료 시각"
+        string lane "Lane 정보"
     }
 
-    MACHINE_RUN {
-        bigint run_id
-        bigint lot_id
-        string machine_id
-        int stage_no
-        int lane_no
-        datetime collect_time
+    %% =========================
+    %% MACHINE : 설비 마스터
+    %% =========================
+    MACHINE {
+        string machine_id PK "설비 PK"
+        string line_id "라인 번호"
+        int stage_no "Stage 번호"
+        int machine_order "Machine 순번"
     }
 
+    %% =========================
+    %% LOT_MACHINE : Lot × Machine 실행 단위
+    %% =========================
+    LOT_MACHINE {
+        string lot_machine_id PK "Lot-Machine 실행 PK"
+        string lot_id FK "Lot FK"
+        string machine_id FK "Machine FK"
+    }
+
+    %% =========================
+    %% FILE_LOT_MACHINE : 파일 ↔ 실행 매핑
+    %% =========================
+    FILE_LOT_MACHINE {
+        string file_id FK "원본 파일 FK"
+        string lot_machine_id FK "Lot-Machine FK"
+    }
+
+    %% =========================
+    %% MACHINE_TIME_SUMMARY : 시간 집계
+    %% =========================
     MACHINE_TIME_SUMMARY {
-        bigint run_id
-        float power_on_sec
-        float prod_time_sec
-        float actual_run_sec
-        float idle_sec
-        float mount_sec
-        float load_sec
-        float brcg_sec
-        float total_stop_sec
-        float front_wait_sec
-        float rear_wait_sec
-        float program_wait_sec
-        float mc_front_wait_sec
+        string lot_machine_id FK "Lot-Machine FK"
+        int power_on_time_sec "Power ON 누적 시간"
+        int running_time_sec "Running 시간"
+        int real_running_time_sec "실제 생산 시간"
+        int total_stop_time_sec "총 정지 시간"
+        int transfer_time_sec "이송 시간"
+        int board_recognition_time_sec "보드 인식 시간"
+        int placement_time_sec "실장 시간"
     }
 
-    MACHINE_STOP_SUMMARY {
-        bigint run_id
-        float safety_stop_sec
-        int safety_stop_cnt
-        float pickup_err_stop_sec
-        int pickup_err_cnt
-        float recog_err_stop_sec
-        int recog_err_cnt
-        float prod_related_stop_sec
-        float other_stop_sec
+    %% =========================
+    %% STOP_REASON : 정지 코드 사전
+    %% =========================
+    STOP_REASON {
+        string stop_reason_code PK "정지 코드"
+        string stop_reason_name "정지 사유 명칭"
+        string stop_reason_group "WAIT / ERROR / QUALITY / SETUP"
     }
 
-    PRODUCTION_QUALITY_SUMMARY {
-        bigint run_id
-        int board_cnt
-        int module_cnt
-        bigint total_pickup_cnt
-        bigint total_mount_cnt
-        int pickup_miss_cnt
-        int recog_miss_cnt
+    %% =========================
+    %% STOP_LOG : 정지 이력 (누적 기반)
+    %% =========================
+    STOP_LOG {
+        string stop_log_id PK "정지 이력 PK"
+        string lot_machine_id FK "Lot-Machine FK"
+        string stop_reason_code FK "정지 사유 코드"
+        int duration_sec "정지 누적 시간"
+        int stop_count "정지 발생 횟수"
+        string source_file_id FK "출처 파일 ID"
     }
+
+    %% =========================
+    %% PICKUP_ERROR_SUMMARY : 설비 품질 요약
+    %% =========================
+    PICKUP_ERROR_SUMMARY {
+        string lot_machine_id FK "Lot-Machine FK"
+        int total_pickup_count "총 Pickup 횟수"
+        int total_error_count "총 에러 수"
+        int pickup_error_count "Pickup 에러 수"
+        int recognition_error_count "인식 에러 수"
+        int thick_error_count "두께 에러 수"
+        int placement_error_count "실장 에러 수"
+        int part_drop_error_count "부품 낙하 에러"
+        int transfer_unit_part_drop_error_count "이송부 낙하 에러"
+        int pre_pickup_inspection_error_count "픽업 전 검사 에러"
+    }
+
+    %% =========================
+    %% COMPONENT : 부품/구성요소 마스터
+    %% =========================
+    COMPONENT {
+        string component_id PK "Component PK"
+        string machine_id FK "Machine FK"
+        string table_id "Table 번호"
+        string feeder_id "Feeder 번호"
+        string feeder_serial "Feeder 시리얼"
+        string nozzle_changer "Nozzle Changer"
+        string nozzle_holder "Nozzle Holder"
+        string nozzle_serial "Nozzle 시리얼"
+        string part_number "부품 번호"
+        string library_name "라이브러리 명"
+    }
+
+    %% =========================
+    %% COMPONENT_PICKUP_SUMMARY : 구성요소별 집계
+    %% =========================
+    COMPONENT_PICKUP_SUMMARY {
+        string lot_machine_id FK "Lot-Machine FK"
+        string component_id FK "Component FK"
+        int pickup_count "Pickup 횟수"
+        int error_count "에러 수"
+        int pickup_error_count "Pickup 에러 수"
+        int recognition_error_count "Recognition 에러 수"
+        string source_file_id FK "출처 파일 ID"
+    }
+
+    %% =========================
+    %% RELATIONSHIPS
+    %% =========================
+    FILE ||--o{ FILE_LOT_MACHINE : maps
+    LOT ||--o{ LOT_MACHINE : has
+    MACHINE ||--o{ LOT_MACHINE : runs
+    LOT_MACHINE ||--o{ FILE_LOT_MACHINE : sourced_from
+
+    LOT_MACHINE ||--|| MACHINE_TIME_SUMMARY : aggregates
+    STOP_REASON ||--o{ STOP_LOG : classifies
+    LOT_MACHINE ||--o{ STOP_LOG : causes
+
+    LOT_MACHINE ||--|| PICKUP_ERROR_SUMMARY : summarizes
+    MACHINE ||--o{ COMPONENT : owns
+    COMPONENT ||--o{ COMPONENT_PICKUP_SUMMARY : counted_by
