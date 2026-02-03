@@ -15,7 +15,10 @@ ON CONFLICT (file_id) DO NOTHING
 SQL_LOT = """
 INSERT INTO lot (lot_id, lot_name, start_time, end_time, lane)
 VALUES (%(lot_id)s, %(lot_name)s, %(start_time)s, %(end_time)s, %(lane)s)
-ON CONFLICT (lot_id) DO NOTHING
+ON CONFLICT (lot_id) DO UPDATE
+    SET start_time = COALESCE(lot.start_time, EXCLUDED.start_time),
+        end_time = COALESCE(lot.end_time, EXCLUDED.end_time),
+        lane = COALESCE(lot.lane, EXCLUDED.lane)
 """
 
 SQL_MACHINE = """

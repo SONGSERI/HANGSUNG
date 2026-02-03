@@ -20,7 +20,7 @@ from file_name_parser import parse_file_name
 from utils import make_hash
 
 from u01_parser import parse_machine_time_summary, parse_stop_information
-from u01_lot_parser import parse_lot_time
+from u01_lot_parser import parse_lot_info
 from u03_parser import (
     parse_pickup_error_summary,
     parse_component_pickup,
@@ -73,12 +73,11 @@ def run_e2e(u01_path: str, u03_path: str):
         **u01_meta,
     }
 
-    lot_time = parse_lot_time(u01_lines)
+    lot_info = parse_lot_info(u01_lines)
     lot_row = {
         "lot_id": lot_id,
         "lot_name": u01_meta["lot_name"],
-        **lot_time,
-        "lane": None,
+        **lot_info,
     }
 
     machine_row = {
