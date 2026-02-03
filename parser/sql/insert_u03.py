@@ -56,7 +56,31 @@ DO UPDATE SET
     error_count = EXCLUDED.error_count
 """
 
+# 🔒 기본값 세트 (DB 스키마 기준)
+PICKUP_SUMMARY_DEFAULT = {
+    "total_pickup_count": 0,
+    "total_error_count": 0,
+    "pickup_error_count": 0,
+    "recognition_error_count": 0,
+    "thick_error_count": 0,
+    "placement_error_count": 0,
+    "part_drop_error_count": 0,
+    "transfer_unit_part_drop_error_count": 0,
+    "pre_pickup_inspection_error_count": 0,
+}
+
+
 def insert_u03(conn, pickup_summary, components, component_summaries):
-    execute_upsert(conn, SQL_PICKUP_SUMMARY, [pickup_summary])
-    execute_upsert(conn, SQL_COMPONENT, components)
-    execute_upsert(conn, SQL_COMPONENT_SUMMARY, component_summaries)
+    # pickup_summary 방어 (KeyError 차단)
+    safe_pickup_summary = {
+        **PICKUP_SUMMARY_DEFAULT,
+        **pickup_summary,
+    }
+
+    execute_upsert(conn, SQL_PICKUP_SUMMARY, [safe_pickup_summary])
+
+    if components:
+        execute_upsert(conn, SQL_COMPONENT, components)
+
+    if component_summaries:
+        execute_upsert(conn, SQL_COMPONENT_SUMMARY, component_summaries)

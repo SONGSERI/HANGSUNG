@@ -1,19 +1,26 @@
 # u03_parser.py
 # 픽업 / 에러 / 부품 단위 요약
 
+from typing import List, Dict, Tuple
+
 from utils import make_hash
 
-def parse_pickup_error_summary(lines: list[str]) -> dict:
-    result = {}
+
+def parse_pickup_error_summary(lines: List[str]) -> Dict[str, int]:
+    result: Dict[str, int] = {}
 
     for line in lines:
         line = line.strip()
+
         if line.startswith("Total Pickup Count"):
             result["total_pickup_count"] = int(line.split()[-1])
+
         elif line.startswith("Total Error Count"):
             result["total_error_count"] = int(line.split()[-1])
+
         elif line.startswith("Pickup Error Count"):
             result["pickup_error_count"] = int(line.split()[-1])
+
         elif line.startswith("Recognition Error Count"):
             result["recognition_error_count"] = int(line.split()[-1])
 
@@ -21,20 +28,18 @@ def parse_pickup_error_summary(lines: list[str]) -> dict:
 
 
 def parse_component_pickup(
-    lines: list[str],
+    lines: List[str],
     machine_id: str,
     lot_machine_id: str,
     file_id: str
-):
-    components = {}
-    summaries = []
+) -> Tuple[List[Dict[str, object]], List[Dict[str, object]]]:
+    components: Dict[str, Dict[str, object]] = {}
+    summaries: List[Dict[str, object]] = []
 
     for line in lines:
         if not line.startswith("COMPONENT"):
             continue
 
-        # 예시 포맷:
-        # COMPONENT T1 F02 FS123 NC1 NH1 NS05 P1234 LIB_A 100 3
         parts = line.split()
 
         table_id, feeder_id, feeder_serial = parts[1], parts[2], parts[3]
@@ -77,4 +82,3 @@ def parse_component_pickup(
         })
 
     return list(components.values()), summaries
-

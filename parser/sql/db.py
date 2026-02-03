@@ -10,9 +10,9 @@ def get_conn():
     return psycopg2.connect(
         host="localhost",
         port=5432,
-        dbname="mes",
-        user="mes_user",
-        password="mes_password",
+        dbname="song",
+        user="song",
+        password="",
     )
 
 def execute_upsert(conn, sql, rows):

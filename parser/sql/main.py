@@ -33,6 +33,6 @@ def process_file(file_path: str):
 
 if __name__ == "__main__":
     process_file(
-        "20260116000000391-05-1-1-3-NAD_H_T_EBR37416101.u01"
+        "test/20260116000000391-05-1-1-3-NAD_H_T_EBR37416101.u01"
     )
 
