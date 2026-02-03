@@ -45,3 +45,16 @@ def insert_core(conn, file_row, lot_row, machine_row, lot_machine_row):
         "file_id": file_row["file_id"],
         "lot_machine_id": lot_machine_row["lot_machine_id"],
     }])
+
+def insert_file_rows(conn, file_rows, lot_machine_id):
+    if not file_rows:
+        return
+    execute_upsert(conn, SQL_FILE, file_rows)
+    file_lot_machine_rows = [
+        {
+            "file_id": row["file_id"],
+            "lot_machine_id": lot_machine_id,
+        }
+        for row in file_rows
+    ]
+    execute_upsert(conn, SQL_FILE_LOT_MACHINE, file_lot_machine_rows)
