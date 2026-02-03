@@ -9,7 +9,7 @@ from typing import List
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(BASE_DIR))
 
-DATA_DIR = BASE_DIR / "test"
+DATA_DIR = BASE_DIR / "test/log"
 print("BASE_DIR =", BASE_DIR)
 print("DATA_DIR =", DATA_DIR)
 

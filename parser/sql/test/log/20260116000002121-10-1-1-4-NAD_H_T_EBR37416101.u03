@@ -1,0 +1,65 @@
+[Index]
+Format=TraceabilityReport
+Version=1.0000
+Machine=NPM
+Date=2026/01/16,00:00:02
+AuthorType=Machine
+Author=
+Diff=
+MJSID="6-TN1R23NC.BCB091-NAD-H-6-1-R-20260113-EX-I-MOUNT"
+Comment=""
+
+[Information]
+Stage=1
+Lane=1
+Serial=1320048
+SerialStatus=1
+Code=""
+BcrStatus=2
+ProductID="33200"
+Rev=92
+PlanID="0"
+Output=4
+LotName="NAD_H_T_EBR37416101"
+LotNumber=1
+MasterWO=""
+SubWO=""
+
+[BRecg]
+IDNUM BRecX BRecY
+5615 -0.013 0.841
+5616 0.344 0.523
+
+[BRecgCalc]
+IDNUM BRecCalcX BRecCalcY
+
+[ElapseTimeRecog]
+BeamNo TargetNo F RecX RecY RecZ RecT StockerNo TurnNo
+
+[SBoard]
+B SCode SBcrStatus SF PG
+
+[HeightCorrect]
+B IDNUM MeasureResult
+
+[MountLatestReel]
+BLKCode BLKSerial Ftype FAdd FSAdd Use PEStatus PCStatus Remain Init PartsName Custom1 Custom2 Custom3 Custom4 ReelID PartsEmp Active TGSerial Index Unmount
+"FA40" "FA0440ADF303652" 0 10003 0 0 1 0 1 0 "UNUSE" "" "" "" "" "" 0 0 "" "" 0
+"FA40" "FA0440ADF303652" 0 10003 0 0 2 0 1 0 "" "" "" "" "" "" 0 0 "" "" 0
+"FA40" "FA0440ADF302931" 0 10006 0 0 1 0 1 0 "UNUSE" "" "" "" "" "" 0 0 "" "" 0
+"FA40" "FA0440ADF302931" 0 10006 0 0 2 0 1 0 "" "" "" "" "" "" 0 0 "" "" 0
+"FB50" "FA0250AAD300347" 307637 20009 0 1 1 0 1 1 "MBK66410201" "" "" "" "" "" 0 1 "" "" 0
+"FB50" "FA0250AAD300347" 307637 20009 0 1 2 0 1 0 "" "" "" "" "" "" 0 0 "" "" 0
+"F950" "FA0450AAD300048" 307637 10009 0 1 1 0 1406 1 "MBK66410201-6-1" "" "" "" "" "" 0 1 "" "" 0
+"F950" "FA0450AAD300048" 307637 10009 0 1 2 0 1 0 "" "" "" "" "" "" 0 0 "" "" 0
+
+[MountExchangeReel]
+BLKCode BLKSerial Ftype FAdd FSAdd Use PEStatus PCStatus Remain Init PartsName Custom1 Custom2 Custom3 Custom4 ReelID PartsEmp Active Index Unmount
+
+[MountQualityTrace]
+B IDNUM TURN MS TS FAdd FSAdd FBLKCode FBLKSerial NHAdd NCAdd NBLKCode NBLKSerial ReelID F RCGX RCGY RCGA TCX TCY MPosiRecX MPosiRecY MPosiRecA MPosiRecZ THMAX THAVE MNTCX MNTCY MNTCA TLX TLY InspectArea DIDNUM DS DispenseID PARTS WarpZ PrePickupLOT PrePickupSTS LoadSV LoadMV ReachCZ LoadUT PartBarcode
+3 4831 1 1 1 10009 0 "F950" "FA0450AAD300048" 2 112 "" "" "" 0 10.896 -4.408 -0.020 -11.058 -3.089 0.000 0.000 0.000 0.000 0.000 0.000 -10.847 -3.787 -0.200 -0.690 -0.120 0 0 0 "" 1904 0.0000 "" 0 0.000 0.000 0.000 0.000 ""
+4 4832 2 1 1 10009 0 "F950" "FA0450AAD300048" 2 112 "" "" "" 0 10.871 -4.496 0.010 -11.058 -3.089 0.000 0.000 0.000 0.000 0.000 0.000 -10.806 -3.677 -0.170 0.000 0.000 0 0 0 "" 1904 0.0000 "" 0 0.000 0.000 0.000 0.000 ""
+2 4833 3 1 1 10009 0 "F950" "FA0450AAD300048" 2 112 "" "" "" 0 10.858 -4.363 0.050 -11.058 -3.089 0.000 0.000 0.000 0.000 0.000 0.000 -10.624 -3.768 -0.130 0.000 0.000 0 0 0 "" 1904 0.0000 "" 0 0.000 0.000 0.000 0.000 ""
+1 4834 4 1 1 10009 0 "F950" "FA0450AAD300048" 2 112 "" "" "" 0 10.881 -4.446 0.050 -11.058 -3.089 0.000 0.000 0.000 0.000 0.000 0.000 -10.633 -3.647 -0.130 0.000 0.000 0 0 0 "" 1904 0.0000 "" 0 0.000 0.000 0.000 0.000 ""
+
