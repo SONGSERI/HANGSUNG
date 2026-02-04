@@ -28,43 +28,6 @@ def get_engine():
     return create_engine(url, pool_pre_ping=True)
 
 
-# =========================
-# Health Check
-# =========================
-def db_health_check():
-    cfg = DB_CONFIG
-    result = {}
-
-    # 1) psycopg2 direct
-    try:
-        conn = psycopg2.connect(
-            user=cfg["user"],
-            password=cfg["password"],
-            host=cfg["host"],
-            port=cfg["port"],
-            dbname=cfg["dbname"],
-            connect_timeout=5,
-        )
-        conn.close()
-        result["direct_ok"] = True
-        result["direct_msg"] = "✅ PostgreSQL direct connection OK"
-    except Exception as e:
-        result["direct_ok"] = False
-        result["direct_msg"] = f"❌ PostgreSQL direct connection FAILED: {e}"
-
-    # 2) SQLAlchemy
-    try:
-        engine = get_engine()
-        with engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        result["sqlalchemy_ok"] = True
-        result["sqlalchemy_msg"] = "✅ SQLAlchemy connection OK"
-    except SQLAlchemyError as e:
-        result["sqlalchemy_ok"] = False
-        result["sqlalchemy_msg"] = f"❌ SQLAlchemy connection FAILED: {e}"
-
-    return result
-
 
 # =========================
 # Table Loader
