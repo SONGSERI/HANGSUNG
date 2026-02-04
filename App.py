@@ -1,21 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from db import db_health_check, load_table
-
-status = db_health_check()
-
-if not status["direct_ok"]:
-    st.error(status["direct_msg"])
-    st.stop()
-else:
-    st.success(status["direct_msg"])
-
-if not status["sqlalchemy_ok"]:
-    st.error(status["sqlalchemy_msg"])
-    st.stop()
-else:
-    st.success(status["sqlalchemy_msg"])
+from db import load_table
 
 
 from analysis_quality import (
