@@ -1,21 +1,20 @@
 import streamlit as st
 import pandas as pd
 
-# =========================
-# 분석 엔진 import
-# =========================
+from db import get_engine, load_table
+
 from analysis_quality import (
     run_quality_risk_analysis,
     QualityRiskParams,
 )
-
 from analysis_equipment import (
     run_equipment_anomaly_analysis,
     EquipmentAnomalyParams,
 )
-
-from analysis_production import production_kpis, build_lot_machine_view
-
+from analysis_production import (
+    build_lot_machine_view,
+    production_kpis,
+)
 
 # =========================
 # Page Config
@@ -26,21 +25,28 @@ st.set_page_config(
 )
 
 st.title("SMT Analysis Lab")
-st.caption("생산 · 설비 · 품질 분석 실험 도구")
+st.caption("PostgreSQL 기반 SMT 분석 실험 도구")
 
 # =========================
-# 데이터 로딩 (예시)
-# 실제로는 PostgreSQL에서 load
+# DB Load
 # =========================
-@st.cache_data
+@st.cache_data(show_spinner="DB에서 데이터 로딩 중...")
 def load_data():
-    lot = pd.read_parquet("data/lot.parquet")
-    lot_machine = pd.read_parquet("data/lot_machine.parquet")
-    machine = pd.read_parquet("data/machine.parquet")
-    time_summary = pd.read_parquet("data/machine_time_summary.parquet")
-    pickup_summary = pd.read_parquet("data/pickup_error_summary.parquet")
-    stop_log = pd.read_parquet("data/stop_log.parquet")
-    stop_reason = pd.read_parquet("data/stop_reason.parquet")
+    engine = get_engine(
+        user="postgres",
+        password="postgres",
+        host="host.docker.internal",  # 필요시 localhost로 변경
+        port=5432,
+        dbname="smt",
+    )
+
+    lot = load_table(engine, "lot")
+    lot_machine = load_table(engine, "lot_machine")
+    machine = load_table(engine, "machine")
+    time_summary = load_table(engine, "machine_time_summary")
+    pickup_summary = load_table(engine, "pickup_error_summary")
+    stop_log = load_table(engine, "stop_log")
+    stop_reason = load_table(engine, "stop_reason")
 
     return (
         lot,
@@ -63,13 +69,19 @@ def load_data():
     stop_reason,
 ) = load_data()
 
-# Base View (공통)
+# =========================
+# Base View (공통 Fact)
+# =========================
 lot_machine_view = build_lot_machine_view(
-    lot, lot_machine, machine, time_summary, pickup_summary
+    lot,
+    lot_machine,
+    machine,
+    time_summary,
+    pickup_summary,
 )
 
 # =========================
-# Sidebar 메뉴
+# Sidebar Menu
 # =========================
 menu = st.sidebar.radio(
     "분석 선택",
@@ -77,11 +89,16 @@ menu = st.sidebar.radio(
 )
 
 with st.sidebar.expander("공통 조건", expanded=True):
-    date_range = st.date_input("분석 기간")
     line_filter = st.multiselect(
         "라인",
-        options=sorted(lot_machine_view["line_id"].dropna().unique().tolist()),
+        sorted(lot_machine_view["line_id"].dropna().unique().tolist()),
     )
+
+# 필터 적용
+if line_filter:
+    lot_machine_view = lot_machine_view[
+        lot_machine_view["line_id"].isin(line_filter)
+    ]
 
 # =========================
 # 📊 생산 분석
@@ -92,8 +109,11 @@ if menu == "📊 생산 분석":
     if st.button("Run 생산 분석"):
         result = production_kpis(lot_machine_view)
 
-        st.subheader("LOT 기준 생산 KPI")
-        st.dataframe(result["lot_level"].head(20), use_container_width=True)
+        st.subheader("LOT 기준 KPI")
+        st.dataframe(
+            result["lot_level"].head(20),
+            use_container_width=True,
+        )
 
 # =========================
 # 🛠 설비 이상 분석
@@ -122,7 +142,7 @@ elif menu == "🛠 설비 이상 분석":
             params,
         )
 
-        st.subheader("이상 설비 Top")
+        st.subheader("이상 설비 TOP")
         st.dataframe(result.head(20), use_container_width=True)
 
 # =========================
@@ -156,11 +176,10 @@ elif menu == "🧪 품질 분석":
             params,
         )
 
-        st.subheader("LOT 품질 Risk Top")
+        st.subheader("LOT 품질 Risk TOP")
         st.dataframe(
             result[
                 ["lot_id", "machine_id", "risk_score", "risk_level"]
             ].head(20),
             use_container_width=True,
         )
-
