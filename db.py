@@ -57,7 +57,7 @@ def db_health_check():
     try:
         engine = get_engine()
         with engine.connect() as conn:
-            conn.execute("SELECT 1")
+            conn.execute(text("SELECT 1"))
         result["sqlalchemy_ok"] = True
         result["sqlalchemy_msg"] = "✅ SQLAlchemy connection OK"
     except SQLAlchemyError as e:
