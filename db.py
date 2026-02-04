@@ -4,7 +4,7 @@ from sqlalchemy import create_engine
 
 def get_engine(
     user="song",
-    password="a12345",
+    password="a12345!@#",
     host="localhost",
     port=5432,
     dbname="song",
