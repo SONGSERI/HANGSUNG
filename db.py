@@ -1,9 +1,8 @@
 import os
 import pandas as pd
 import psycopg2
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.exc import SQLAlchemyError
-
 
 # =========================
 # DB Config (Single Source)
