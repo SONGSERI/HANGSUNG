@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-from db import load_table
+from db import load_table, get_engine
 
 
 from analysis_quality import (
