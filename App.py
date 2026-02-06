@@ -33,13 +33,7 @@ st.caption("PostgreSQL 기반 SMT 분석 실험 도구")
 # =========================
 @st.cache_data(show_spinner="DB에서 데이터 로딩 중...")
 def load_data():
-    engine = get_engine(
-        user="postgres",
-        password="postgres",
-        host="host.docker.internal",  # 필요시 localhost로 변경
-        port=5432,
-        dbname="smt",
-    )
+    engine = get_engine()
 
     lot = load_table(engine, "lot")
     lot_machine = load_table(engine, "lot_machine")
