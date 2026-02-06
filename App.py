@@ -35,13 +35,13 @@ st.caption("PostgreSQL 기반 SMT 분석 실험 도구")
 def load_data():
     engine = get_engine()
 
-    lot = load_table(engine, "lot")
-    lot_machine = load_table(engine, "lot_machine")
-    machine = load_table(engine, "machine")
-    time_summary = load_table(engine, "machine_time_summary")
-    pickup_summary = load_table(engine, "pickup_error_summary")
-    stop_log = load_table(engine, "stop_log")
-    stop_reason = load_table(engine, "stop_reason")
+    lot = load_table("lot")
+    lot_machine = load_table("lot_machine")
+    machine = load_table("machine")
+    time_summary = load_table("machine_time_summary")
+    pickup_summary = load_table("pickup_error_summary")
+    stop_log = load_table("stop_log")
+    stop_reason = load_table("stop_reason")
 
     return (
         lot,
