@@ -135,6 +135,56 @@ erDiagram
     }
 
     %% =========================
+    %% TAG_CATEGORY : 태그 분류
+    %% =========================
+    TAG_CATEGORY {
+        string tag_category_id PK "태그 분류 PK"
+        string tag_category_name "태그 분류명"
+        string parent_category_id FK "상위 분류 PK (옵션)"
+        string description "분류 설명"
+    }
+
+    %% =========================
+    %% TAG_INFO : 태그 기준 정보
+    %% =========================
+    TAG_INFO {
+        string tag_id PK "태그 PK"
+        string tag_name "태그명"
+        string tag_category_id FK "태그 분류 FK"
+        string machine_id FK "Machine FK (옵션)"
+        string data_type "데이터 타입 (int/float/string)"
+        string unit "단위"
+        string source_system "수집 시스템"
+        boolean is_active "사용 여부"
+        string description "태그 설명"
+    }
+
+    %% =========================
+    %% TAG_SPEC : 태그 기준값/스펙
+    %% =========================
+    TAG_SPEC {
+        string tag_spec_id PK "태그 기준 PK"
+        string tag_id FK "Tag FK"
+        string spec_type "기준 타입 (TARGET/LCL/UCL)"
+        float spec_value "기준 값"
+        datetime effective_from "적용 시작"
+        datetime effective_to "적용 종료"
+    }
+
+    %% =========================
+    %% TAG_REALTIME : 실시간 데이터 적재
+    %% =========================
+    TAG_REALTIME {
+        string tag_data_id PK "실시간 데이터 PK"
+        string tag_id FK "Tag FK"
+        string machine_id FK "Machine FK (옵션)"
+        datetime recorded_at "측정 시각"
+        float tag_value "태그 값"
+        string quality_flag "품질 플래그"
+        string source_file_id FK "출처 파일 ID (옵션)"
+    }
+
+    %% =========================
     %% RELATIONSHIPS
     %% =========================
     FILE ||--o{ FILE_LOT_MACHINE : maps
@@ -149,3 +199,10 @@ erDiagram
     LOT_MACHINE ||--|| PICKUP_ERROR_SUMMARY : summarizes
     MACHINE ||--o{ COMPONENT : owns
     COMPONENT ||--o{ COMPONENT_PICKUP_SUMMARY : counted_by
+
+    TAG_CATEGORY ||--o{ TAG_CATEGORY : parent_of
+    TAG_CATEGORY ||--o{ TAG_INFO : groups
+    MACHINE ||--o{ TAG_INFO : defines
+    TAG_INFO ||--o{ TAG_SPEC : has
+    TAG_INFO ||--o{ TAG_REALTIME : streams
+    MACHINE ||--o{ TAG_REALTIME : measures
