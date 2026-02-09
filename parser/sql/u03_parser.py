@@ -24,6 +24,21 @@ def parse_pickup_error_summary(lines: List[str]) -> Dict[str, int]:
         elif line.startswith("Recognition Error Count"):
             result["recognition_error_count"] = int(line.split()[-1])
 
+        elif line.startswith("Thick Error Count"):
+            result["thick_error_count"] = int(line.split()[-1])
+
+        elif line.startswith("Placement Error Count"):
+            result["placement_error_count"] = int(line.split()[-1])
+
+        elif line.startswith("Part Drop Error Count"):
+            result["part_drop_error_count"] = int(line.split()[-1])
+
+        elif line.startswith("Transfer Unit Part Drop Error Count"):
+            result["transfer_unit_part_drop_error_count"] = int(line.split()[-1])
+
+        elif line.startswith("Pre Pickup Inspection Error Count"):
+            result["pre_pickup_inspection_error_count"] = int(line.split()[-1])
+
     return result
 
 
@@ -76,7 +91,7 @@ def parse_component_pickup(
             "component_id": component_id,
             "pickup_count": pickup_count,
             "error_count": error_count,
-            "pickup_error_count": error_count,
+            "pickup_error_count": 0,
             "recognition_error_count": 0,
             "source_file_id": file_id,
         })
