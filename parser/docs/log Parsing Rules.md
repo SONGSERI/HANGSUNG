@@ -169,6 +169,7 @@ YYYYMMDDNNNNNN-LINE-PROCESS-STAGE-MACHINE-LOTNAME.u01
 ### 9.1 대상
 
 * u03 Pickup / Error Summary
+* 로그에 존재하는 항목만 파싱하며, 미존재 항목은 적재 시 기본값(0) 유지
 
 | 컬럼명                                 | 설명 |
 | ----------------------------------- | -- |
@@ -227,6 +228,9 @@ component_id = hash(
 | pickup_error_count      |    |
 | recognition_error_count |    |
 | source_file_id          |    |
+
+> COMPONENT 라인에는 pickup/error 총계만 있어 pickup/recognition 상세 에러는 로그에 없으며,
+> 해당 컬럼은 기본값(0)으로 적재
 
 ---
 
