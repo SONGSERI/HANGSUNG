@@ -1,4 +1,24 @@
 -- =========================
+-- RESET : 기존 테이블 삭제
+-- =========================
+DROP TABLE IF EXISTS tag_realtime CASCADE;
+DROP TABLE IF EXISTS tag_spec CASCADE;
+DROP TABLE IF EXISTS tag_info CASCADE;
+DROP TABLE IF EXISTS tag_category CASCADE;
+DROP TABLE IF EXISTS component_pickup_summary CASCADE;
+DROP TABLE IF EXISTS component CASCADE;
+DROP TABLE IF EXISTS pickup_error_summary CASCADE;
+DROP TABLE IF EXISTS stop_log CASCADE;
+DROP TABLE IF EXISTS stop_reason CASCADE;
+DROP TABLE IF EXISTS machine_time_summary CASCADE;
+DROP TABLE IF EXISTS file_lot_machine CASCADE;
+DROP TABLE IF EXISTS lot_machine CASCADE;
+DROP TABLE IF EXISTS machine CASCADE;
+DROP TABLE IF EXISTS lot CASCADE;
+DROP TABLE IF EXISTS file CASCADE;
+
+
+-- =========================
 -- FILE : 로그 파일 메타
 -- =========================
 CREATE TABLE file (
