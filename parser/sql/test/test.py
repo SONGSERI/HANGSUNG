@@ -25,6 +25,12 @@ from u03_parser import (
     parse_pickup_error_summary,
     parse_component_pickup,
 )
+from tag_parser import (
+    normalize_tag_categories,
+    normalize_tag_infos,
+    normalize_tag_realtime,
+    parse_tag_raw_entries,
+)
 from pipeline import run_pipeline
 
 
@@ -113,6 +119,26 @@ def run_e2e(u01_path: str, u03_path: str):
         file_id=file_id,
     )
 
+    default_recorded_at = u01_meta["file_datetime"].strftime("%Y-%m-%d %H:%M:%S")
+    u01_tag_categories, u01_tag_infos, u01_tag_realtime = parse_tag_raw_entries(
+        u01_lines,
+        machine_id=machine_id,
+        source_file_id=file_id,
+        source_system="u01",
+        default_recorded_at=default_recorded_at,
+    )
+    u03_tag_categories, u03_tag_infos, u03_tag_realtime = parse_tag_raw_entries(
+        u03_lines,
+        machine_id=machine_id,
+        source_file_id=file_id,
+        source_system="u03",
+        default_recorded_at=default_recorded_at,
+    )
+
+    tag_categories = normalize_tag_categories(u01_tag_categories + u03_tag_categories)
+    tag_infos = normalize_tag_infos(u01_tag_infos + u03_tag_infos)
+    tag_realtime = normalize_tag_realtime(u01_tag_realtime + u03_tag_realtime)
+
     # ---------- DB INSERT ----------
     run_pipeline(
         file_row=file_row,
@@ -124,6 +150,9 @@ def run_e2e(u01_path: str, u03_path: str):
         pickup_summary=pickup_summary,
         components=components,
         component_summaries=component_summaries,
+        tag_categories=tag_categories,
+        tag_infos=tag_infos,
+        tag_realtime=tag_realtime,
     )
 
 

@@ -19,7 +19,6 @@ def run_pipeline(
     tag_infos=None,
     tag_specs=None,
     tag_realtime=None,
-    extra_file_rows=None
 ):
     conn = get_conn()
 
@@ -34,11 +33,11 @@ def run_pipeline(
 
     if any([tag_categories, tag_infos, tag_specs, tag_realtime]):
         insert_tags(
-           conn,
+            conn,
             tag_categories=tag_categories,
             tag_infos=tag_infos,
             tag_specs=tag_specs,
-           tag_realtime=tag_realtime,
-     )
+            tag_realtime=tag_realtime,
+        )
 
     conn.close()

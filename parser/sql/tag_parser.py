@@ -1,7 +1,8 @@
 # tag_parser.py
 # 태그 관련 데이터 파싱/정규화
 
-from typing import Dict, Iterable, List, Optional
+from datetime import datetime
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from utils import make_hash, parse_bool
 
@@ -116,3 +117,117 @@ def normalize_tag_realtime(rows: Iterable[Dict[str, object]]) -> List[Dict[str, 
         )
 
     return normalized
+
+
+def _parse_float(value: str) -> Optional[float]:
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _clean_value(raw: str) -> str:
+    return raw.strip().strip('"')
+
+
+def _parse_recorded_at(lines: List[str], fallback: str) -> str:
+    for line in lines:
+        if not line.startswith("Date="):
+            continue
+        value = _clean_value(line.split("=", 1)[1])
+        try:
+            return datetime.strptime(value, "%Y/%m/%d,%H:%M:%S").isoformat(sep=" ")
+        except ValueError:
+            return fallback
+    return fallback
+
+
+def parse_tag_raw_entries(
+    lines: List[str],
+    machine_id: str,
+    source_file_id: str,
+    source_system: str,
+    default_recorded_at: str,
+) -> Tuple[List[Dict[str, object]], List[Dict[str, object]], List[Dict[str, object]]]:
+    """
+    u01/u03 raw 로그의 [Section] Key=Value 형태를 태그 테이블 입력 형태로 변환
+    - category: section 이름
+    - tag_name: section.key
+    - realtime: 수치형 값만 적재
+    """
+    section = "GLOBAL"
+    recorded_at = _parse_recorded_at(lines, fallback=default_recorded_at)
+
+    tag_categories: List[Dict[str, object]] = []
+    tag_infos: List[Dict[str, object]] = []
+    tag_realtime: List[Dict[str, object]] = []
+
+    for raw_line in lines:
+        line = raw_line.strip()
+        if not line:
+            continue
+
+        if line.startswith("[") and line.endswith("]"):
+            section = line[1:-1].strip() or "GLOBAL"
+            continue
+
+        if "=" not in line:
+            continue
+
+        key, raw_value = line.split("=", 1)
+        key = key.strip()
+        value = _clean_value(raw_value)
+        if not key:
+            continue
+
+        category_name = section
+        category_id = make_hash("tag_category", category_name)
+        tag_name = f"{section}.{key}"
+        tag_id = make_hash("tag", machine_id, tag_name)
+
+        tag_categories.append(
+            {
+                "tag_category_id": category_id,
+                "tag_category_name": category_name,
+                "parent_category_id": None,
+                "description": f"Raw section category: {category_name}",
+            }
+        )
+
+        numeric_value = _parse_float(value)
+        data_type = "float" if numeric_value is not None else "string"
+        tag_infos.append(
+            {
+                "tag_id": tag_id,
+                "tag_name": tag_name,
+                "tag_category_id": category_id,
+                "machine_id": machine_id,
+                "data_type": data_type,
+                "unit": None,
+                "source_system": source_system,
+                "is_active": True,
+                "description": f"Raw key from [{section}]",
+            }
+        )
+
+        if numeric_value is None:
+            continue
+
+        tag_realtime.append(
+            {
+                "tag_data_id": make_hash(
+                    "tag_data",
+                    tag_id,
+                    source_file_id,
+                    recorded_at,
+                ),
+                "tag_id": tag_id,
+                "machine_id": machine_id,
+                "recorded_at": recorded_at,
+                "tag_value": numeric_value,
+                "quality_flag": None,
+                "source_file_id": source_file_id,
+            }
+        )
+
+    return tag_categories, tag_infos, tag_realtime
