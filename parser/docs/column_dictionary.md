@@ -141,7 +141,61 @@ HTML 리포트는 본 컬럼들의 **집계 결과물**
 
 ---
 
-## ⚠️ 데이터 범위 명시 (중요)
+## 11. TAG_CATEGORY — 태그 분류
+
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| tag_category_id | string (PK) | 태그 분류 식별자 | 시스템 생성 |
+| tag_category_name | string | 태그 분류명 | 로그 Section / 운영정의 |
+| parent_category_id | string (FK) | 상위 태그 분류 ID | 운영정의 |
+| description | string | 분류 설명 | 운영정의 |
+
+---
+
+## 12. TAG_INFO — 태그 기준 정보
+
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| tag_id | string (PK) | 태그 식별자 | 시스템 생성 |
+| tag_name | string | 태그명 (`Section.Key`) | u01/u03 raw |
+| tag_category_id | string (FK) | 태그 분류 식별자 | TAG_CATEGORY |
+| machine_id | string (FK) | 설비 식별자(옵션) | MACHINE |
+| data_type | string | 데이터 타입 (`float`/`string`) | raw 값 판별 |
+| unit | string | 단위 | 운영정의 |
+| source_system | string | 수집 시스템 (`u01`/`u03`) | 파일 확장자 |
+| is_active | bool | 사용 여부 | 기본값(true) |
+| description | string | 태그 설명 | 파싱 생성 |
+
+---
+
+## 13. TAG_SPEC — 태그 기준값/스펙
+
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| tag_spec_id | string (PK) | 스펙 식별자 | 시스템 생성 |
+| tag_id | string (FK) | 태그 식별자 | TAG_INFO |
+| spec_type | string | 기준 타입 (`TARGET/LCL/UCL`) | 운영정의 |
+| spec_value | float | 기준 값 | 운영정의 |
+| effective_from | datetime | 적용 시작 시각 | 운영정의 |
+| effective_to | datetime | 적용 종료 시각 | 운영정의 |
+
+---
+
+## 14. TAG_REALTIME — 태그 실시간 값
+
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| tag_data_id | string (PK) | 태그 데이터 식별자 | 시스템 생성 |
+| tag_id | string (FK) | 태그 식별자 | TAG_INFO |
+| machine_id | string (FK) | 설비 식별자(옵션) | MACHINE |
+| recorded_at | datetime | 측정 시각 | 로그 `Date=` / 파일일자 fallback |
+| tag_value | float | 태그 측정값 | u01/u03 raw 숫자값 |
+| quality_flag | string | 품질 플래그 | 운영정의 |
+| source_file_id | string (FK) | 출처 파일 ID | FILE |
+
+---
+
+## 15. ⚠️ 데이터 범위 명시 (중요)
 
 **본 로그로 생성 불가능한 데이터**
 - 개별 Pick 이벤트 단건 타임라인

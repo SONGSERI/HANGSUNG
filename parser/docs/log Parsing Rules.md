@@ -234,7 +234,33 @@ component_id = hash(
 
 ---
 
-## 12. 파일 간 Join 규칙
+
+## 12. TAG 파싱 규칙 (u01/u03 raw)
+
+### 12.1 대상
+
+* u01/u03 로그의 `[Section]` 내부 `Key=Value` 라인
+
+### 12.2 매핑 규칙
+
+* `TAG_CATEGORY.tag_category_name` = `Section`
+* `TAG_INFO.tag_name` = `Section.Key`
+* `TAG_INFO.source_system` = 파일 타입(`u01`/`u03`)
+* `TAG_REALTIME.tag_value` = Value가 숫자인 경우에만 적재
+* `TAG_REALTIME.recorded_at` = 로그 `Date=` 우선, 없으면 `FILE.file_datetime 00:00:00`
+
+### 12.3 ID 생성 규칙
+
+* `tag_category_id = hash("tag_category" + section_name)`
+* `tag_id = hash("tag" + machine_id + section.key)`
+* `tag_data_id = hash("tag_data" + tag_id + source_file_id + recorded_at)`
+
+> 문자열/코드 값은 현재 `TAG_INFO` 메타로만 관리하고,
+> `TAG_REALTIME`에는 수치형 값만 적재한다.
+
+---
+
+## 13. 파일 간 Join 규칙
 
 * u01 ↔ u03 공통 키
 
@@ -246,7 +272,7 @@ lot_name + line_id + stage_no + machine_order
 
 ---
 
-## 13. 명시적 제한 사항
+## 14. 명시적 제한 사항
 
 * 개별 Cycle 이벤트 ❌
 * Stop Start/End 타임라인 ❌
@@ -254,7 +280,7 @@ lot_name + line_id + stage_no + machine_order
 
 ---
 
-## 14. 문서 역할 요약
+## 15. 문서 역할 요약
 
 * ERD: **구조 정의**
 * 본 문서: **파싱 구현 규칙**
