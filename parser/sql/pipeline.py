@@ -3,6 +3,7 @@ from insert_master import insert_stop_reason_master
 from insert_core import insert_core
 from insert_u01 import insert_u01
 from insert_u03 import insert_u03
+from insert_tag import insert_tags
 
 def run_pipeline(
     file_row,
@@ -13,7 +14,12 @@ def run_pipeline(
     stop_logs,
     pickup_summary,
     components,
-    component_summaries
+    component_summaries,
+    tag_categories=None,
+    tag_infos=None,
+    tag_specs=None,
+    tag_realtime=None,
+    extra_file_rows=None
 ):
     conn = get_conn()
 
@@ -25,5 +31,14 @@ def run_pipeline(
 
     if pickup_summary:
         insert_u03(conn, pickup_summary, components, component_summaries)
+
+    if any([tag_categories, tag_infos, tag_specs, tag_realtime]):
+        insert_tags(
+           conn,
+            tag_categories=tag_categories,
+            tag_infos=tag_infos,
+            tag_specs=tag_specs,
+           tag_realtime=tag_realtime,
+     )
 
     conn.close()
