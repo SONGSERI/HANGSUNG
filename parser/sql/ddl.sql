@@ -184,3 +184,71 @@ CREATE TABLE component_pickup_summary (
     CONSTRAINT fk_cps_file
         FOREIGN KEY (source_file_id) REFERENCES file (file_id)
 );
+
+
+-- =========================
+-- TAG_CATEGORY : 태그 분류
+-- =========================
+CREATE TABLE tag_category (
+    tag_category_id      VARCHAR(64) PRIMARY KEY,
+    tag_category_name    VARCHAR(128) NOT NULL,
+    parent_category_id   VARCHAR(64),
+    description          TEXT,
+    CONSTRAINT fk_tag_category_parent
+        FOREIGN KEY (parent_category_id) REFERENCES tag_category (tag_category_id)
+);
+
+
+-- =========================
+-- TAG_INFO : 태그 기준 정보
+-- =========================
+CREATE TABLE tag_info (
+    tag_id            VARCHAR(64) PRIMARY KEY,
+    tag_name          VARCHAR(128) NOT NULL,
+    tag_category_id   VARCHAR(64) NOT NULL,
+    machine_id        VARCHAR(64),
+    data_type         VARCHAR(32),
+    unit              VARCHAR(32),
+    source_system     VARCHAR(64),
+    is_active         BOOLEAN,
+    description       TEXT,
+    CONSTRAINT fk_tag_info_category
+        FOREIGN KEY (tag_category_id) REFERENCES tag_category (tag_category_id),
+    CONSTRAINT fk_tag_info_machine
+        FOREIGN KEY (machine_id) REFERENCES machine (machine_id)
+);
+
+
+-- =========================
+-- TAG_SPEC : 태그 기준값/스펙
+-- =========================
+CREATE TABLE tag_spec (
+    tag_spec_id    VARCHAR(64) PRIMARY KEY,
+    tag_id         VARCHAR(64) NOT NULL,
+    spec_type      VARCHAR(32) NOT NULL,
+    spec_value     DOUBLE PRECISION,
+    effective_from TIMESTAMP,
+    effective_to   TIMESTAMP,
+    CONSTRAINT fk_tag_spec_info
+        FOREIGN KEY (tag_id) REFERENCES tag_info (tag_id)
+);
+
+
+-- =========================
+-- TAG_REALTIME : 실시간 데이터 적재
+-- =========================
+CREATE TABLE tag_realtime (
+    tag_data_id     VARCHAR(64) PRIMARY KEY,
+    tag_id          VARCHAR(64) NOT NULL,
+    machine_id      VARCHAR(64),
+    recorded_at     TIMESTAMP NOT NULL,
+    tag_value       DOUBLE PRECISION,
+    quality_flag    VARCHAR(32),
+    source_file_id  VARCHAR(64),
+    CONSTRAINT fk_tag_rt_info
+        FOREIGN KEY (tag_id) REFERENCES tag_info (tag_id),
+    CONSTRAINT fk_tag_rt_machine
+        FOREIGN KEY (machine_id) REFERENCES machine (machine_id),
+    CONSTRAINT fk_tag_rt_file
+        FOREIGN KEY (source_file_id) REFERENCES file (file_id)
+);
