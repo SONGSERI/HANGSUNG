@@ -42,6 +42,12 @@ st.set_page_config(
 st.title("SMT Analysis Lab")
 st.caption("PostgreSQL 기반 SMT 분석 실험 도구")
 
+
+def _fmt_num(value, digits=2):
+    if pd.isna(value):
+        return "-"
+    return f"{value:,.{digits}f}"
+
 # =========================
 # DB Load
 # =========================
@@ -180,6 +186,57 @@ if menu == "📊 생산 분석":
             use_container_width=True,
         )
 
+        lot_level = result["lot_level"].copy()
+        lot_level["stop_ratio"] = (
+            lot_level["total_stop_time_sec"]
+            / (lot_level["running_time_sec"] + lot_level["total_stop_time_sec"])
+        ).fillna(0)
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("LOT 수", f"{len(lot_level):,}")
+        c2.metric("총 생산 수량", _fmt_num(lot_level["actual_qty"].sum(), 0))
+        c3.metric("평균 UPS", _fmt_num(lot_level["ups"].mean(), 3))
+        c4.metric("평균 정지비율", f"{_fmt_num(lot_level['stop_ratio'].mean() * 100, 1)}%")
+
+        st.markdown("#### 시각화")
+        left, right = st.columns(2)
+
+        with left:
+            st.caption("Top 10 LOT 생산 수량")
+            top_qty = (
+                lot_level[["lot_id", "actual_qty"]]
+                .sort_values("actual_qty", ascending=False)
+                .head(10)
+                .set_index("lot_id")
+            )
+            st.bar_chart(top_qty)
+
+            st.caption("라인별 평균 UPS")
+            line_ups = (
+                lot_level.groupby("line_id", dropna=False)["ups"]
+                .mean()
+                .sort_values(ascending=False)
+                .rename("avg_ups")
+            )
+            st.bar_chart(line_ups)
+
+        with right:
+            st.caption("LOT 러닝시간(시간) vs 생산수량")
+            scatter_df = lot_level[["running_time_hr", "actual_qty"]].dropna()
+            if not scatter_df.empty:
+                st.scatter_chart(scatter_df, x="running_time_hr", y="actual_qty")
+            else:
+                st.info("산점도 표시를 위한 데이터가 부족합니다.")
+
+            st.caption("LOT별 정지시간(시간) Top 10")
+            top_stop = (
+                lot_level[["lot_id", "stop_time_hr"]]
+                .sort_values("stop_time_hr", ascending=False)
+                .head(10)
+                .set_index("lot_id")
+            )
+            st.bar_chart(top_stop)
+
 # =========================
 # 🛠 설비 이상 분석
 # =========================
@@ -209,6 +266,49 @@ elif menu == "🛠 설비 이상 분석":
 
         st.subheader("이상 설비 TOP")
         st.dataframe(result.head(20), use_container_width=True)
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("분석 설비 수", f"{len(result):,}")
+        c2.metric("이상 설비 수", f"{int(result['is_anomaly'].sum()):,}")
+        c3.metric("최대 이상 점수", _fmt_num(result["anomaly_score"].max(), 2))
+
+        st.markdown("#### 시각화")
+        left, right = st.columns(2)
+
+        with left:
+            st.caption("설비별 이상 점수 Top 15")
+            anomaly_top = (
+                result[["machine_id", "anomaly_score"]]
+                .sort_values("anomaly_score", ascending=False)
+                .head(15)
+                .set_index("machine_id")
+            )
+            st.bar_chart(anomaly_top)
+
+            st.caption("라인별 총 정지시간(시간)")
+            line_stop = (
+                result.groupby("line_id", dropna=False)["total_stop_sec"]
+                .sum()
+                .div(3600)
+                .rename("stop_hour")
+            )
+            st.bar_chart(line_stop)
+
+        with right:
+            st.caption("정지시간 vs 정지횟수")
+            scatter_df = result[["total_stop_sec", "total_stop_count"]].dropna()
+            if not scatter_df.empty:
+                st.scatter_chart(scatter_df, x="total_stop_sec", y="total_stop_count")
+            else:
+                st.info("산점도 표시를 위한 데이터가 부족합니다.")
+
+            reason_cols = [
+                col for col in ["ERROR", "SETUP", "MATERIAL", "OPERATION"] if col in result.columns
+            ]
+            if reason_cols:
+                st.caption("주요 정지 사유 합계(초)")
+                reason_sum = result[reason_cols].sum().sort_values(ascending=False)
+                st.bar_chart(reason_sum)
 
 # =========================
 # 🧪 품질 분석
@@ -248,196 +348,3 @@ elif menu == "🧪 품질 분석":
             ].head(20),
             use_container_width=True,
         )
-
-# =========================
-# 📈 ERD 핵심 분석
-# =========================
-elif menu == "📈 ERD 핵심 분석":
-    st.header("📈 ERD 핵심 분석")
-    analysis_tab = st.selectbox(
-        "분석 항목",
-        [
-            "Top 정지코드 10개 시간손실 기여도",
-            "설비별 가동률 vs 에러율 매트릭스",
-            "부품(Part Number)별 에러 Pareto",
-            "태그 스펙 이탈 상위 20개",
-        ],
-    )
-
-    if analysis_tab == "Top 정지코드 10개 시간손실 기여도":
-        required = {"stop_reason_code", "duration_sec", "stop_count", "lot_machine_id"}
-        if stop_log.empty or not required.issubset(stop_log.columns):
-            st.warning("`stop_log` 테이블(필수 컬럼 포함)을 찾을 수 없어 분석을 실행할 수 없습니다.")
-        else:
-            stop_df = stop_log.copy()
-            stop_df["duration_sec"] = pd.to_numeric(stop_df["duration_sec"], errors="coerce").fillna(0)
-            stop_df["stop_count"] = pd.to_numeric(stop_df["stop_count"], errors="coerce").fillna(0)
-
-            by_reason = (
-                stop_df.groupby("stop_reason_code", dropna=False)
-                .agg(total_duration_sec=("duration_sec", "sum"), total_stop_count=("stop_count", "sum"))
-                .reset_index()
-                .sort_values("total_duration_sec", ascending=False)
-            )
-
-            total_duration = by_reason["total_duration_sec"].sum()
-            by_reason["contribution_pct"] = np.where(
-                total_duration > 0,
-                by_reason["total_duration_sec"] / total_duration * 100,
-                0.0,
-            )
-
-            if not stop_reason.empty and {"stop_reason_code", "stop_reason_name", "stop_reason_group"}.issubset(stop_reason.columns):
-                by_reason = by_reason.merge(
-                    stop_reason[["stop_reason_code", "stop_reason_name", "stop_reason_group"]],
-                    on="stop_reason_code",
-                    how="left",
-                )
-
-            top10 = by_reason.head(10)
-            st.metric("전체 정지시간(초)", f"{int(total_duration):,}")
-            st.dataframe(top10, use_container_width=True)
-            st.bar_chart(
-                top10.set_index("stop_reason_code")["total_duration_sec"],
-                use_container_width=True,
-            )
-
-    elif analysis_tab == "설비별 가동률 vs 에러율 매트릭스":
-        required = {
-            "machine_id",
-            "power_on_time_sec",
-            "running_time_sec",
-            "total_pickup_count",
-            "total_error_count",
-        }
-        if lot_machine_view.empty or not required.issubset(lot_machine_view.columns):
-            st.warning("`lot_machine_view` 계산에 필요한 컬럼이 부족해 분석을 실행할 수 없습니다.")
-        else:
-            matrix_df = lot_machine_view.copy()
-            matrix_df["power_on_time_sec"] = pd.to_numeric(matrix_df["power_on_time_sec"], errors="coerce")
-            matrix_df["running_time_sec"] = pd.to_numeric(matrix_df["running_time_sec"], errors="coerce")
-            matrix_df["total_pickup_count"] = pd.to_numeric(matrix_df["total_pickup_count"], errors="coerce").fillna(0)
-            matrix_df["total_error_count"] = pd.to_numeric(matrix_df["total_error_count"], errors="coerce").fillna(0)
-
-            by_machine = (
-                matrix_df.groupby("machine_id", dropna=False)
-                .agg(
-                    power_on_time_sec=("power_on_time_sec", "sum"),
-                    running_time_sec=("running_time_sec", "sum"),
-                    total_pickup_count=("total_pickup_count", "sum"),
-                    total_error_count=("total_error_count", "sum"),
-                )
-                .reset_index()
-            )
-            by_machine["uptime_ratio"] = by_machine["running_time_sec"] / by_machine["power_on_time_sec"].replace(0, np.nan)
-            by_machine["error_rate"] = by_machine["total_error_count"] / by_machine["total_pickup_count"].replace(0, np.nan)
-
-            x_median = by_machine["uptime_ratio"].median()
-            y_median = by_machine["error_rate"].median()
-            by_machine["quadrant"] = np.select(
-                [
-                    (by_machine["uptime_ratio"] >= x_median) & (by_machine["error_rate"] < y_median),
-                    (by_machine["uptime_ratio"] >= x_median) & (by_machine["error_rate"] >= y_median),
-                    (by_machine["uptime_ratio"] < x_median) & (by_machine["error_rate"] < y_median),
-                ],
-                ["우수(고가동·저에러)", "품질 개선 필요", "가동 개선 필요"],
-                default="핵심 개선 대상",
-            )
-
-            st.caption(f"중앙값 기준선: 가동률={x_median:.3f}, 에러율={y_median:.3%}")
-            st.dataframe(by_machine.sort_values(["error_rate", "uptime_ratio"], ascending=[False, True]), use_container_width=True)
-            st.scatter_chart(
-                by_machine,
-                x="uptime_ratio",
-                y="error_rate",
-                size="total_pickup_count",
-                color="quadrant",
-                use_container_width=True,
-            )
-
-    elif analysis_tab == "부품(Part Number)별 에러 Pareto":
-        required = {"component_id", "pickup_count", "error_count"}
-        if component_pickup_summary.empty or not required.issubset(component_pickup_summary.columns):
-            st.warning("`component_pickup_summary` 테이블(필수 컬럼 포함)을 찾을 수 없어 분석을 실행할 수 없습니다.")
-        else:
-            comp_df = component_pickup_summary.copy()
-            comp_df["pickup_count"] = pd.to_numeric(comp_df["pickup_count"], errors="coerce").fillna(0)
-            comp_df["error_count"] = pd.to_numeric(comp_df["error_count"], errors="coerce").fillna(0)
-
-            by_part = comp_df.groupby("component_id", dropna=False).agg(
-                pickup_count=("pickup_count", "sum"),
-                error_count=("error_count", "sum"),
-            ).reset_index()
-
-            if not component.empty and {"component_id", "part_number"}.issubset(component.columns):
-                by_part = by_part.merge(
-                    component[["component_id", "part_number"]],
-                    on="component_id",
-                    how="left",
-                )
-            else:
-                by_part["part_number"] = by_part["component_id"]
-
-            by_part = by_part.groupby("part_number", dropna=False).agg(
-                pickup_count=("pickup_count", "sum"),
-                error_count=("error_count", "sum"),
-            ).reset_index()
-            by_part = by_part.sort_values("error_count", ascending=False)
-
-            total_error = by_part["error_count"].sum()
-            by_part["error_contribution_pct"] = np.where(
-                total_error > 0,
-                by_part["error_count"] / total_error * 100,
-                0.0,
-            )
-            by_part["cumulative_pct"] = by_part["error_contribution_pct"].cumsum()
-            by_part["error_rate"] = by_part["error_count"] / by_part["pickup_count"].replace(0, np.nan)
-
-            top_n = st.slider("Pareto 표시 개수", min_value=10, max_value=min(100, len(by_part) if len(by_part) > 0 else 10), value=min(20, len(by_part) if len(by_part) > 0 else 10))
-            top_parts = by_part.head(top_n)
-
-            st.dataframe(top_parts, use_container_width=True)
-            st.bar_chart(top_parts.set_index("part_number")["error_count"], use_container_width=True)
-
-    elif analysis_tab == "태그 스펙 이탈 상위 20개":
-        required_rt = {"tag_id", "tag_value"}
-        required_spec = {"tag_id", "spec_type", "spec_value"}
-
-        if tag_realtime.empty or tag_spec.empty or not required_rt.issubset(tag_realtime.columns) or not required_spec.issubset(tag_spec.columns):
-            st.warning("`tag_realtime` 또는 `tag_spec` 테이블(필수 컬럼 포함)을 찾을 수 없어 분석을 실행할 수 없습니다.")
-        else:
-            rt_df = tag_realtime.copy()
-            sp_df = tag_spec.copy()
-            rt_df["tag_value"] = pd.to_numeric(rt_df["tag_value"], errors="coerce")
-            sp_df["spec_value"] = pd.to_numeric(sp_df["spec_value"], errors="coerce")
-
-            spec_pivot = (
-                sp_df[sp_df["spec_type"].isin(["LCL", "UCL"])][["tag_id", "spec_type", "spec_value"]]
-                .pivot_table(index="tag_id", columns="spec_type", values="spec_value", aggfunc="last")
-                .reset_index()
-            )
-
-            merged = rt_df.merge(spec_pivot, on="tag_id", how="inner")
-            merged = merged[merged["tag_value"].notna()]
-            merged["out_of_spec"] = (
-                (merged["LCL"].notna() & (merged["tag_value"] < merged["LCL"]))
-                | (merged["UCL"].notna() & (merged["tag_value"] > merged["UCL"]))
-            )
-
-            outlier = (
-                merged.groupby("tag_id", dropna=False)
-                .agg(total_count=("tag_id", "size"), out_of_spec_count=("out_of_spec", "sum"))
-                .reset_index()
-            )
-            outlier["out_of_spec_rate"] = outlier["out_of_spec_count"] / outlier["total_count"].replace(0, np.nan)
-
-            if not tag_info.empty and {"tag_id", "tag_name", "tag_category_id"}.issubset(tag_info.columns):
-                outlier = outlier.merge(
-                    tag_info[["tag_id", "tag_name", "tag_category_id"]],
-                    on="tag_id",
-                    how="left",
-                )
-
-            top20 = outlier.sort_values(["out_of_spec_count", "out_of_spec_rate"], ascending=False).head(20)
-            st.dataframe(top20, use_container_width=True)
-            st.bar_chart(top20.set_index("tag_id")["out_of_spec_count"], use_container_width=True)
