@@ -348,3 +348,39 @@ elif menu == "🧪 품질 분석":
             ].head(20),
             use_container_width=True,
         )
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("분석 건수", f"{len(result):,}")
+        c2.metric("HIGH 리스크 건수", f"{int((result['risk_level'] == 'HIGH').sum()):,}")
+        c3.metric("이상치 건수", f"{int(result['is_anomaly'].sum()):,}")
+        c4.metric("평균 리스크 점수", _fmt_num(result["risk_score"].mean(), 4))
+
+        st.markdown("#### 시각화")
+        left, right = st.columns(2)
+
+        with left:
+            st.caption("리스크 레벨 분포")
+            level_dist = result["risk_level"].astype(str).value_counts()
+            st.bar_chart(level_dist)
+
+            st.caption("리스크 점수 Top 15")
+            risk_top = (
+                result[["lot_id", "risk_score"]]
+                .sort_values("risk_score", ascending=False)
+                .head(15)
+                .set_index("lot_id")
+            )
+            st.bar_chart(risk_top)
+
+        with right:
+            st.caption("Pickup 수량 vs 리스크 점수")
+            scatter_df = result[["total_pickup_count", "risk_score"]].dropna()
+            if not scatter_df.empty:
+                st.scatter_chart(scatter_df, x="total_pickup_count", y="risk_score")
+            else:
+                st.info("산점도 표시를 위한 데이터가 부족합니다.")
+
+            st.caption("리스크 점수 분포")
+            hist_input = result[["risk_score"]].dropna()
+            if not hist_input.empty:
+                st.bar_chart(hist_input)
