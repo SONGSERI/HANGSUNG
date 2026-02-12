@@ -3,8 +3,6 @@
 ## 1) 목적
 `dbo.INSERT_BEINGPLUS_DATA` 프로시저를 애플리케이션의 표준 저장 인터페이스로 호출하기 위한 템플릿
 
----
-
 ## 2) Python 호출 방식
 - 템플릿 코드: `parser/sql/mssql_beingplus.py`
 - 드라이버: `pyodbc`

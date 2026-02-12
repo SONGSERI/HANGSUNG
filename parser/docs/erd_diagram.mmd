@@ -184,6 +184,44 @@ erDiagram
         string source_file_id FK "출처 파일 ID (옵션)"
     }
 
+
+    %% =========================
+    %% BEINGPLUS_INGEST_QUEUE : 프로시저 호출 전 입력 큐
+    %% =========================
+    BEINGPLUS_INGEST_QUEUE {
+        bigint queue_id PK "수집 큐 PK"
+        string line_code "라인 코드"
+        string work_code "작업 코드"
+        string equip_code "설비 코드"
+        string address "태그 주소"
+        string tag_type "태그 타입 (0/1/2/3/4...)"
+        string tag_value "태그 값 원문"
+        datetime device_dt "장비 측정 시각"
+        datetime receive_dt "수신 시각(UTC)"
+        string status "PENDING/SENT/FAILED"
+        int retry_count "재시도 횟수"
+        string last_error "마지막 오류 메시지"
+    }
+
+    %% =========================
+    %% BEINGPLUS_PROC_LOG : 프로시저 실행 로그
+    %% =========================
+    BEINGPLUS_PROC_LOG {
+        bigint proc_log_id PK "프로시저 로그 PK"
+        bigint queue_id FK "수집 큐 FK (옵션)"
+        string line_code "라인 코드"
+        string work_code "작업 코드"
+        string equip_code "설비 코드"
+        string address "태그 주소"
+        string tag_type "태그 타입"
+        string tag_value "태그 값 원문"
+        datetime device_dt "장비 측정 시각"
+        datetime call_dt "프로시저 호출 시각(UTC)"
+        int elapsed_ms "호출 소요 시간(ms)"
+        string rs_code "프로시저 결과 코드"
+        string rs_msg "프로시저 결과 메시지"
+    }
+
     %% =========================
     %% RELATIONSHIPS
     %% =========================
@@ -207,3 +245,4 @@ erDiagram
     TAG_INFO ||--o{ TAG_REALTIME : streams
     MACHINE ||--o{ TAG_REALTIME : measures
     FILE ||--o{ TAG_REALTIME : sourced_from
+    BEINGPLUS_INGEST_QUEUE ||--o{ BEINGPLUS_PROC_LOG : traces

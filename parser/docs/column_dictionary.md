@@ -195,7 +195,46 @@ HTML 리포트는 본 컬럼들의 **집계 결과물**
 
 ---
 
-## 15. ⚠️ 데이터 범위 명시 (중요)
+## 15. BEINGPLUS_INGEST_QUEUE — MSSQL 프로시저 입력 큐
+
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| queue_id | bigint (PK) | 수집 큐 식별자 | 시스템 생성 |
+| line_code | string | 라인 코드 | PLC/태그 인터페이스 |
+| work_code | string | 작업 코드 | PLC/태그 인터페이스 |
+| equip_code | string | 설비 코드 | PLC/태그 인터페이스 |
+| address | string | 태그 주소 | PLC/태그 인터페이스 |
+| tag_type | string | 태그 타입 (`0`/`1`/`2`/`3`/`4`...) | 운영정의 |
+| tag_value | string | 태그 값 원문 (`NVARCHAR(50)` 대응) | PLC/태그 인터페이스 |
+| device_dt | datetime | 장비 측정 시각 | PLC/태그 인터페이스 |
+| receive_dt | datetime | 앱 수신 시각(UTC) | 시스템 생성 |
+| status | string | 큐 상태 (`PENDING`/`SENT`/`FAILED`) | 시스템 상태 |
+| retry_count | int | 재시도 횟수 | 시스템 상태 |
+| last_error | string | 마지막 실패 메시지 | 시스템 상태 |
+
+---
+
+## 16. BEINGPLUS_PROC_LOG — MSSQL 프로시저 실행 로그
+
+| 컬럼명 | 타입 | 설명 | 출처 |
+|---|---|---|---|
+| proc_log_id | bigint (PK) | 실행 로그 식별자 | 시스템 생성 |
+| queue_id | bigint (FK, nullable) | 입력 큐 식별자 | BEINGPLUS_INGEST_QUEUE |
+| line_code | string | 라인 코드 | 프로시저 호출 파라미터 |
+| work_code | string | 작업 코드 | 프로시저 호출 파라미터 |
+| equip_code | string | 설비 코드 | 프로시저 호출 파라미터 |
+| address | string | 태그 주소 | 프로시저 호출 파라미터 |
+| tag_type | string | 태그 타입 | 프로시저 호출 파라미터 |
+| tag_value | string | 태그 값 원문 | 프로시저 호출 파라미터 |
+| device_dt | datetime | 장비 측정 시각 | 프로시저 호출 파라미터 |
+| call_dt | datetime | 프로시저 호출 시각(UTC) | 시스템 생성 |
+| elapsed_ms | int | 호출 소요 시간(ms) | 시스템 측정값 |
+| rs_code | string | 프로시저 응답 코드 (`S`/`E`) | `@RS_CODE` OUTPUT |
+| rs_msg | string | 프로시저 응답 메시지 | `@RS_MSG` OUTPUT |
+
+---
+
+## 17. ⚠️ 데이터 범위 명시 (중요)
 
 **본 로그로 생성 불가능한 데이터**
 - 개별 Pick 이벤트 단건 타임라인
