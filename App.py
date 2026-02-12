@@ -1,10 +1,7 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-<<<<<<< ours
-=======
 from typing import List
->>>>>>> theirs
 
 from db import load_table
 
@@ -23,11 +20,8 @@ from analysis_production import (
 )
 
 
-<<<<<<< ours
 def ensure_columns(df: pd.DataFrame, required_columns: list[str]) -> pd.DataFrame:
-=======
-def ensure_columns(df: pd.DataFrame, required_columns: List[str]) -> pd.DataFrame:
->>>>>>> theirs
+
     if df.empty:
         return pd.DataFrame(columns=required_columns)
 
