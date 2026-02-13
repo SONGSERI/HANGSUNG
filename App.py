@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 from typing import List
 
+
 from db import load_table
 
 
@@ -187,10 +188,19 @@ if menu == "📊 생산 분석":
         )
 
         lot_level = result["lot_level"].copy()
-        lot_level["stop_ratio"] = (
-            lot_level["total_stop_time_sec"]
-            / (lot_level["running_time_sec"] + lot_level["total_stop_time_sec"])
-        ).fillna(0)
+
+        stop_denominator = (
+            lot_level["running_time_sec"].fillna(0)
+            + lot_level["total_stop_time_sec"].fillna(0)
+        ).to_numpy(dtype=float)
+        stop_numerator = lot_level["total_stop_time_sec"].fillna(0).to_numpy(dtype=float)
+        lot_level["stop_ratio"] = np.divide(
+            stop_numerator,
+            stop_denominator,
+            out=np.zeros_like(stop_numerator, dtype=float),
+            where=stop_denominator != 0,
+        )
+
 
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("LOT 수", f"{len(lot_level):,}")
