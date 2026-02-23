@@ -8,11 +8,11 @@ from sqlalchemy.exc import SQLAlchemyError
 # DB Config (Single Source)
 # =========================
 DB_CONFIG = {
-    "user": os.getenv("DB_USER", "song"),
-    "password": os.getenv("DB_PASSWORD", "a12345"),
-    "host": os.getenv("DB_HOST", "localhost"),
+    "user": os.getenv("DB_USER", "analysis"),
+    "password": os.getenv("DB_PASSWORD", "analysis1!"),
+    "host": os.getenv("DB_HOST", "192.168.200.105"),
     "port": int(os.getenv("DB_PORT", 5432)),
-    "dbname": os.getenv("DB_NAME", "song"),
+    "dbname": os.getenv("DB_NAME", "nexedge"),
 }
 
 
