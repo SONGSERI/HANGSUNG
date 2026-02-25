@@ -1,0 +1,62 @@
+%% Panasonic SMT log ERD (flexible)
+
+erDiagram
+  report ||--|| report_info : has
+  report ||--o{ report_kv_sections : has
+  report ||--o{ report_table_sections : has
+  report ||--o{ report_table_rows : has
+
+  report {
+    text report_id PK
+    text file_path
+    text file_name
+    text file_dir
+    text file_ext
+    timestamp file_ts
+    text format
+    text version
+    text machine
+    timestamp report_dt
+    text author_type
+    text author
+    text diff
+    text mjsid
+    text comment
+  }
+
+  report_info {
+    text report_id PK,FK
+    text stage
+    text lane
+    text serial
+    text serialstatus
+    text code
+    text bcrstatus
+    text productid
+    text rev
+    text planid
+    text output
+    text lotname
+    text lotnumber
+    text masterwo
+    text subwo
+  }
+
+  report_kv_sections {
+    text report_id FK
+    text section_name
+    jsonb data
+  }
+
+  report_table_sections {
+    text report_id FK
+    text section_name
+    jsonb columns
+  }
+
+  report_table_rows {
+    text report_id FK
+    text section_name
+    int row_index
+    jsonb data
+  }
