@@ -23,6 +23,8 @@ KPI_COLORS = {'good': '#00CC96', 'medium': '#FFA15A', 'bad': '#EF553B'}
 CARD_BG = '#11151d'
 CARD_TEXT = '#fff'
 INFO_TEXT = '#b0b0b0'
+PRIMARY_COLOR = '#1f77b4'
+SECONDARY_COLOR = '#ff7f0e'
 STOP_REASON_GROUP_COLORS = {
     'Process': '#636efa',
     'Quality': '#ef553b',
@@ -821,6 +823,58 @@ def render_process_view(views: Dict[str, pd.DataFrame], filters: Dict[str, List[
     )
     st.plotly_chart(fig_pie, use_container_width=True)
 
+    if not stop_df.empty:
+        reason_tot = (
+            stop_df.groupby(['stop_reason_code', 'stop_reason_name'], as_index=False)['duration_sec']
+            .sum()
+            .sort_values('duration_sec', ascending=False)
+        )
+        reason_tot['cum_pct'] = reason_tot['duration_sec'].cumsum() / (reason_tot['duration_sec'].sum() or 1)
+        pareto = go.Figure()
+        pareto.add_trace(go.Bar(
+            x=reason_tot['stop_reason_name'],
+            y=reason_tot['duration_sec'],
+            name='Stop Time',
+            marker_color=PRIMARY_COLOR
+        ))
+        pareto.add_trace(go.Scatter(
+            x=reason_tot['stop_reason_name'],
+            y=reason_tot['cum_pct'] * 100,
+            name='Cumulative %',
+            mode='lines+markers',
+            marker_color=SECONDARY_COLOR,
+            yaxis='y2'
+        ))
+        pareto.update_layout(
+            template=DARK_TEMPLATE,
+            title='Stop Pareto (누적 80% 기준)',
+            yaxis_title='Stop Time (s)',
+            yaxis2=dict(title='Cumulative %', overlaying='y', side='right', range=[0, 110])
+        )
+        pareto.add_shape(
+            type='line',
+            x0=-0.5,
+            x1=len(reason_tot) - 0.5,
+            y0=80,
+            y1=80,
+            yref='y2',
+            line=dict(color='#ffffff', width=1, dash='dash')
+        )
+        st.plotly_chart(pareto, use_container_width=True)
+        top80_idx = reason_tot[reason_tot['cum_pct'] >= 0.8]
+        if not top80_idx.empty:
+            idx = top80_idx.index[0]
+            covered = reason_tot.loc[:idx, 'duration_sec'].sum()
+            n_reasons = idx + 1
+        else:
+            covered = reason_tot['duration_sec'].sum()
+            n_reasons = len(reason_tot)
+        insight_text = (
+            f"상위 {n_reasons}개 정지 원인이 전체 {format_duration(reason_tot['duration_sec'].sum())} 중 "
+            f"{format_duration(covered)} ({safe_div(covered, reason_tot['duration_sec'].sum()) * 100:.1f}%)을 차지합니다."
+        )
+        st.caption(insight_text)
+
     approx_note = highlight_time_note(stop_df['time_axis_is_approx'].any())
     trend = (
         stop_df.dropna(subset=['time_sort'])
@@ -951,6 +1005,37 @@ def render_machine_view(views: Dict[str, pd.DataFrame], filters: Dict[str, List[
     )
     st.plotly_chart(fig_reason, use_container_width=True)
 
+    if not reason_tally.empty:
+        total_time = reason_tally['duration_sec'].sum()
+        quadrant = reason_tally.copy()
+        quadrant['share'] = quadrant['duration_sec'] / (total_time or 1)
+        quadrant['duration_label'] = quadrant['duration_sec'].apply(format_duration)
+        quad_fig = px.scatter(
+            quadrant,
+            x='stop_count',
+            y='duration_sec',
+            size='duration_sec',
+            color='stop_reason_group',
+            template=DARK_TEMPLATE,
+            title='Stop Reason Time-vs-Count Quadrant',
+            color_discrete_map=STOP_REASON_GROUP_COLORS,
+            text='stop_reason_name',
+            custom_data=['duration_label', 'share']
+        )
+        quad_fig.update_traces(
+            hovertemplate='<b>%{text}</b><br>Stop Time %{customdata[0]}<br>Stop Count %{x}<br>Share %{customdata[1]:.1%}<extra></extra>'
+        )
+        st.plotly_chart(quad_fig, use_container_width=True)
+
+        time_top = quadrant.loc[quadrant['duration_sec'].idxmax()]
+        count_top = quadrant.loc[quadrant['stop_count'].idxmax()]
+        quad_insights = [
+            f"관측 기반 패턴: {time_top['stop_reason_name']}이 정지 시간 {format_duration(time_top['duration_sec'])} ({time_top['share'] * 100:.1f}% share) 으로 가장 높습니다.",
+            f"관측 기반 패턴: {count_top['stop_reason_name']}이 건수 {int(count_top['stop_count'])}회로 상위입니다."
+        ]
+
+        st.markdown("<br>".join(quad_insights))
+
     machine_trend = (
         machine_df.groupby(['machine_id', 'day'], as_index=False)
         .agg({
@@ -1002,6 +1087,172 @@ def render_machine_view(views: Dict[str, pd.DataFrame], filters: Dict[str, List[
         st.table(top_components)
     else:
         render_no_data('Component defect data가 없습니다.')
+
+    # ------------------------------------------------------------------
+    # Pickup RCA Analysis
+    # ------------------------------------------------------------------
+    min_pickup = filters.get('min_pickup_count', 0)
+    pickup_quality = component_df[component_df['pickup_count'] >= min_pickup] if not component_df.empty else component_df
+    if pickup_quality.empty:
+        st.info("Pickup RCA Analysis를 위한 충분한 data가 없습니다.")
+        return
+
+    pickup_quality = pickup_quality.copy()
+    pickup_quality['pickup_error_rate'] = pickup_quality.apply(
+        lambda row: safe_div(row['pickup_error_count'], row['pickup_count']), axis=1
+    )
+
+    st.markdown("## Pickup RCA Analysis")
+    machine_pickup_all = (
+        pickup_quality.groupby('machine_id', as_index=False)
+        .agg(pickup_error_count=('pickup_error_count', 'sum'), pickup_count=('pickup_count', 'sum'))
+    )
+    machine_pickup_all['rate'] = machine_pickup_all.apply(
+        lambda row: safe_div(row['pickup_error_count'], row['pickup_count']), axis=1
+    )
+    machine_pickup = machine_pickup_all.sort_values('rate', ascending=False).head(10)
+    overall_rate = safe_div(machine_pickup_all['pickup_error_count'].sum(), machine_pickup_all['pickup_count'].sum())
+
+    bar_fig = px.bar(
+        machine_pickup[::-1],
+        x='rate',
+        y='machine_id',
+        orientation='h',
+        color='rate',
+        color_continuous_scale='Tealgrn',
+        template=DARK_TEMPLATE,
+        title='Pickup Error Machine Ranking',
+        custom_data=['pickup_error_count', 'pickup_count']
+    )
+    bar_fig.update_traces(
+        hovertemplate='<b>%{y}</b><br>Pickup Error Rate %{x:.1%}<br>Error %{customdata[0]} / Pickup %{customdata[1]}<extra></extra>'
+    )
+    st.plotly_chart(bar_fig, use_container_width=True)
+    st.table(
+        machine_pickup[['machine_id', 'pickup_error_count', 'pickup_count', 'rate']]
+        .rename(columns={'machine_id': 'Machine', 'pickup_error_count': 'Error Count', 'pickup_count': 'Pickup Count', 'rate': 'Error Rate'})
+    )
+    if not machine_pickup.empty:
+        top_machine = machine_pickup.iloc[0]
+        multiplier = safe_div(top_machine['rate'], overall_rate)
+        st.markdown(
+            f"관측 기반 패턴: Machine {top_machine['machine_id']}의 Pickup Error Rate가 "
+            f"{top_machine['rate'] * 100:.1f}% ({int(top_machine['pickup_error_count'])}/{int(top_machine['pickup_count'])})로 "
+            f"평균 대비 {multiplier:.1f}배 높게 관측됩니다."
+        )
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        corr_df = machine_pickup_all[['machine_id', 'pickup_error_count', 'pickup_count', 'rate']].copy()
+        stops_per_machine = stop_df.groupby('machine_id', as_index=False)['duration_sec'].sum()
+        total_stop = stops_per_machine['duration_sec'].sum()
+        stops_per_machine['stop_share'] = stops_per_machine['duration_sec'] / (total_stop or 1)
+        corr_df = corr_df.merge(stops_per_machine[['machine_id', 'stop_share']], on='machine_id', how='left').fillna(0)
+        corr_df['pickup_count'] = corr_df['pickup_count'].fillna(0)
+        stop_group = (
+            stop_df.groupby(['machine_id', 'stop_reason_group'], as_index=False)['duration_sec']
+            .sum()
+        )
+        #stop_group = stop_group.loc[stop_group.groupby('machine_id')['duration_sec'].idxmax().fillna(stop_group.index)]
+        idx = stop_group.groupby('machine_id')['duration_sec'].idxmax()
+        # NaN 제거 후 선택
+        idx = idx.dropna()
+        stop_group = stop_group.loc[idx]
+        
+        corr_df = corr_df.merge(stop_group[['machine_id', 'stop_reason_group']], on='machine_id', how='left')
+        scatter = px.scatter(
+            corr_df,
+            x='rate',
+            y='stop_share',
+            size='pickup_count',
+            color='stop_reason_group',
+            template=DARK_TEMPLATE,
+            title='Pickup vs Stop Correlation',
+            hover_data={'pickup_count': True, 'stop_share': ':.1%', 'rate': ':.1%'}
+        )
+        mean_rate = corr_df['rate'].mean()
+        mean_stop = corr_df['stop_share'].mean()
+        scatter.add_shape({'type': 'line', 'x0': mean_rate, 'x1': mean_rate, 'y0': 0, 'y1': 1, 'line': {'dash': 'dash', 'color': '#ffffff'}})
+        scatter.add_shape({'type': 'line', 'x0': 0, 'x1': 1, 'y0': mean_stop, 'y1': mean_stop, 'line': {'dash': 'dash', 'color': '#ffffff'}})
+        st.plotly_chart(scatter, use_container_width=True)
+        corr_coef = corr_df['rate'].corr(corr_df['stop_share'])
+        if corr_coef and corr_coef > 0.3:
+            st.markdown("관측 기반 패턴: Pickup Error가 높은 설비에서 정지 비중도 동반 상승하는 경향이 보입니다.")
+
+        st.markdown("""
+        **Pickup ↔ Stop Correlation 코멘트**
+        - **Equipment**: Pickup Error Rate↑, Stop Share↑ → 설비 조건 불안정 가능성 / Vacuum·헤드·노즐 점검 필요
+        - **Quality**: Pickup Error Rate↑, Stop Share↑ → 부품·라이브러리·릴 집중 여부 추가 확인 필요
+        - **Waiting**: Pickup Error Rate 낮은데 Stop Share↑ → 라인 밸런스 문제 (Pickup 직접 연계 가능성 낮음)
+        - **Process**: CHANGEOVER 或 특정 Lot 중심 증가 → 운영 조건 이슈 가능성
+        """)
+
+    with col2:
+        perf_df = (
+            machine_df.groupby('machine_id', as_index=False)
+            .agg(real_running_time_sec=('real_running_time_sec', 'sum'), running_time_sec=('running_time_sec', 'sum'))
+        )
+        perf_df['performance'] = perf_df.apply(
+            lambda row: safe_div(row['real_running_time_sec'], row['running_time_sec']), axis=1
+        )
+        perf_df = perf_df.merge(machine_pickup[['machine_id', 'rate', 'pickup_count']], on='machine_id', how='left').fillna(0)
+        perf_df = perf_df.sort_values('rate', ascending=False).head(10)
+        fig_perf = go.Figure()
+        fig_perf.add_trace(go.Bar(
+            x=perf_df['machine_id'],
+            y=perf_df['rate'],
+            name='Pickup Error Rate',
+            marker_color=PRIMARY_COLOR,
+            customdata=perf_df[['pickup_count']],
+            hovertemplate='Machine %{x}<br>Pickup Error %{y:.1%}<br>Pickup Count %{customdata[0]}<extra></extra>'
+        ))
+        fig_perf.add_trace(go.Scatter(
+            x=perf_df['machine_id'],
+            y=perf_df['performance'],
+            name='Performance',
+            yaxis='y2',
+            marker_color=SECONDARY_COLOR,
+            hovertemplate='Machine %{x}<br>Performance %{y:.1%}<extra></extra>'
+        ))
+        fig_perf.update_layout(
+            template=DARK_TEMPLATE,
+            title='Pickup Error vs Performance',
+            yaxis=dict(title='Pickup Error Rate', tickformat=',.0%'),
+            yaxis2=dict(title='Performance', overlaying='y', side='right')
+        )
+        st.plotly_chart(fig_perf, use_container_width=True)
+        low_perf = perf_df.loc[perf_df['performance'].idxmin()]
+        st.markdown(
+            f"관측 기반 패턴: Machine {low_perf['machine_id']}은 Pickup Error {low_perf['rate'] * 100:.1f}% "
+            f"대비 Performance {low_perf['performance'] * 100:.1f}%으로 운영 조건 저하 가능성이 있습니다."
+        )
+
+    lot_pickup = (
+        pickup_quality.groupby('lot_id', as_index=False)
+        .agg(pickup_error_count=('pickup_error_count', 'sum'), pickup_count=('pickup_count', 'sum'))
+    )
+    if lot_pickup.empty:
+        st.info("Lot Concentration 분석을 위한 데이터가 없습니다.")
+        return
+    lot_pickup['rate'] = lot_pickup.apply(
+        lambda row: safe_div(row['pickup_error_count'], row['pickup_count']), axis=1
+    )
+    lot_pickup = lot_pickup.sort_values('rate', ascending=False)
+    lot_fig = px.bar(
+        lot_pickup,
+        x='lot_id',
+        y='rate',
+        template=DARK_TEMPLATE,
+        title='Lot Concentration Analysis',
+        hover_data={'pickup_error_count': True, 'pickup_count': True}
+    )
+    lot_fig.update_traces(hovertemplate='Lot %{x}<br>Pickup Error %{y:.1%}<br>Error %{customdata[0]} / Pickup %{customdata[1]}<extra></extra>')
+    st.plotly_chart(lot_fig, use_container_width=True)
+    total_lot_error = lot_pickup['pickup_error_count'].sum()
+    top_share = safe_div(lot_pickup.iloc[0]['pickup_error_count'], total_lot_error)
+    if top_share > 0.4:
+        st.markdown("특정 LOT에 오류가 집중되는 경향이 관측됩니다.")
 
 
 def render_quality_view(views: Dict[str, pd.DataFrame], filters: Dict[str, List[str]]):
@@ -1095,6 +1346,48 @@ def render_quality_view(views: Dict[str, pd.DataFrame], filters: Dict[str, List[
     )
     fig_heat.update_layout(title=f'Component Defect Heatmap ({metric_toggle})', template=DARK_TEMPLATE)
     st.plotly_chart(fig_heat, use_container_width=True)
+
+    assoc_machine = None
+    filter_machines = filters.get('machines', [])
+    machine_stops = stop_df.groupby('machine_id')['duration_sec'].sum()
+    if filter_machines:
+        assoc_machine = filter_machines[0]
+    elif not machine_stops.empty:
+        assoc_machine = machine_stops.idxmax()
+
+    overall_errors = component_df['error_count'].sum()
+    overall_pickups = component_df['pickup_count'].sum()
+    overall_rate = safe_div(overall_errors, overall_pickups)
+
+    if assoc_machine:
+        machine_scope = component_df[component_df['machine_id'] == assoc_machine]
+        machine_errors = machine_scope['error_count'].sum()
+        machine_pickups = machine_scope['pickup_count'].sum()
+        machine_rate = safe_div(machine_errors, machine_pickups)
+        ratio_text = (
+            f"평균 대비 {safe_div(machine_rate, overall_rate):.1f}배 높게 관측됩니다."
+            if overall_rate else "전체 기준이 부족하여 평균 대비 비교 불가합니다."
+        )
+        st.markdown(
+            f"Stop ↔ Quality 동반 관측 가능성: Machine {assoc_machine} error_rate {machine_rate * 100:.1f}% "
+            f"({int(machine_errors)}/{int(machine_pickups)}) vs 전체 {overall_rate * 100:.1f}% "
+            f"({int(overall_errors)}/{int(overall_pickups)}) · {ratio_text}"
+        )
+    else:
+        st.info('Stop 로그 대상 Machine을 선택하거나 데이터 확보 후 실행해주세요.')
+
+    changeover_machines = stop_df[stop_df['stop_reason_code'] == 'CHANGEOVER']['machine_id'].unique()
+    if len(changeover_machines) and overall_rate:
+        changeover_scope = component_df[component_df['machine_id'].isin(changeover_machines)]
+        if not changeover_scope.empty:
+            co_errors = changeover_scope['error_count'].sum()
+            co_pickups = changeover_scope['pickup_count'].sum()
+            co_rate = safe_div(co_errors, co_pickups)
+            st.markdown(
+                f"Changeover 동반 관측 가능성: 관련 Machine error_rate {co_rate * 100:.1f}% "
+                f"({int(co_errors)}/{int(co_pickups)}) vs 평균 {overall_rate * 100:.1f}% "
+                f"({int(overall_errors)}/{int(overall_pickups)}) → 평균 대비 {safe_div(co_rate, overall_rate):.1f}배 높게 관측됩니다."
+            )
 
     trend_base = stop_df.dropna(subset=['time_sort']).copy()
     if 'error_count' not in trend_base.columns:
@@ -1253,14 +1546,101 @@ def render_rca_summary(views: Dict[str, pd.DataFrame], filters: Dict[str, List[s
     st.subheader("RCA Summary")
    
     exec_summary, operator_summary = generate_rca_summary(views, filters)
+    stop_df = views['vw_stop_enriched']
+    total_time = stop_df['duration_sec'].sum()
+    top_paths = (
+        stop_df.groupby(['line_id', 'stage_no', 'machine_id', 'stop_reason_name'], as_index=False)
+        .agg(stop_time=('duration_sec', 'sum'), stop_count=('stop_count', 'sum'))
+        .sort_values('stop_time', ascending=False)
+        .head(3)
+    )
 
     st.markdown("### Executive Summary")
+    if top_paths.empty:
+        st.info("Top Loss Path 데이터를 확보할 수 없습니다.")
+    else:
+        cols = st.columns(len(top_paths))
+        for col, (_, row) in zip(cols, top_paths.iterrows()):
+            share = safe_div(row['stop_time'], total_time)
+            route = f"{row['line_id']} → Stage {int(row['stage_no'])} → {row['machine_id']} → {row['stop_reason_name']}"
+            with col:
+                st.markdown(f"**{route}**")
+                st.markdown(f"Stop Time: {_hms(row['stop_time'])} / {int(row['stop_time'])}s")
+                st.markdown(f"Stop Count: {int(row['stop_count'])}")
+                st.markdown(f"Share: {share * 100:.1f}%")
+                st.progress(min(max(share, 0.0), 1.0))
+
     st.text_area("Copy", exec_summary, height=220)
 
     st.markdown("### Operator Summary")
+    component_df = views['vw_component_quality']
+    min_pickup = filters.get('min_pickup_count', 0)
+    comp_filtered = component_df[component_df['pickup_count'] >= min_pickup]
+    col_left, col_right = st.columns(2)
+    if comp_filtered.empty:
+        col_left.info("필터 조건을 만족하는 Machine data가 없습니다.")
+        col_right.info("필터 조건을 만족하는 Part data가 없습니다.")
+    else:
+        machine_stats = (
+            comp_filtered.groupby('machine_id', as_index=False)
+            .agg(error_count=('error_count', 'sum'), pickup_count=('pickup_count', 'sum'))
+        )
+        machine_stats['error_rate'] = machine_stats.apply(
+            lambda row: safe_div(row['error_count'], row['pickup_count']), axis=1
+        )
+        top_parts_machine = (
+            comp_filtered.sort_values('error_count', ascending=False)
+            .drop_duplicates('machine_id')[['machine_id', 'part_number']]
+        )
+        machines_view = (
+            machine_stats.merge(top_parts_machine, on='machine_id', how='left')
+            .sort_values('error_rate', ascending=False)
+            .head(10)
+        )
+        machines_view['error_rate'] = machines_view.apply(
+            lambda row: f"{row['error_rate'] * 100:.1f}% ({int(row['error_count'])}/{int(row['pickup_count'])})", axis=1
+        )
+        machines_view = machines_view[['machine_id', 'error_rate', 'part_number']]
+        machines_view = machines_view.rename(columns={'machine_id': 'Machine', 'part_number': 'Top Part'})
+        col_left.markdown("#### Worst Machines (Top 10)")
+        col_left.table(machines_view)
+
+        part_stats = (
+            comp_filtered.groupby('part_number', as_index=False)
+            .agg(error_count=('error_count', 'sum'), pickup_count=('pickup_count', 'sum'))
+        )
+        part_stats['error_rate'] = part_stats.apply(
+            lambda row: safe_div(row['error_count'], row['pickup_count']), axis=1
+        )
+        top_machine_per_part = (
+            comp_filtered.sort_values('error_count', ascending=False)
+            .drop_duplicates('part_number')[['part_number', 'machine_id']]
+        )
+        parts_view = (
+            part_stats.merge(top_machine_per_part, on='part_number', how='left')
+            .sort_values('error_rate', ascending=False)
+            .head(10)
+        )
+        parts_view['error_rate'] = parts_view.apply(
+            lambda row: f"{row['error_rate'] * 100:.1f}% ({int(row['error_count'])}/{int(row['pickup_count'])})", axis=1
+        )
+        parts_view = parts_view.rename(columns={'part_number': 'Part', 'machine_id': 'Top Machine'})
+        parts_view = parts_view[['Part', 'Top Machine', 'error_rate']]
+        col_right.markdown("#### Hot Parts (Top 10)")
+        col_right.table(parts_view)
+
     st.text_area("Copy ", operator_summary, height=320)
 
     st.caption("※ 관측 기반 요약이며, 시간축 근사/누적 proxy 가능성이 있습니다.")
+
+def _hms(sec: float) -> str:
+    if sec is None or pd.isna(sec):
+        return "-"
+    sec = int(sec)
+    h = sec // 3600
+    m = (sec % 3600) // 60
+    s = sec % 60
+    return f"{h}:{m:02d}:{s:02d}"
 
 
 # ------------------------------------------------------------------
@@ -1269,8 +1649,8 @@ def render_rca_summary(views: Dict[str, pd.DataFrame], filters: Dict[str, List[s
 
 def main():
     st.set_page_config(layout='wide', page_title='SMT Process Analytics')
-    st.title('SMT Manufacturing Analytics Demo')
-    st.markdown('SMT RCA Dashboard')
+    st.title('Mount Manufacturing Analytics Demo')
+    st.markdown('RCA Dashboard')
 
     #engine = get_engine()
     sample_mode = False
