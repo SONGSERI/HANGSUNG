@@ -1,0 +1,2854 @@
+erDiagram
+    _timescaledb_cache_cache_inval_bgw_job {
+        integer compressed_chunk_id FK
+    }
+    _timescaledb_cache_cache_inval_extension {
+        timestamp_with_time_zone creation_time
+    }
+    _timescaledb_cache_cache_inval_hypertable {
+        boolean dropped
+    }
+    _timescaledb_catalog_chunk {
+        integer hypertable_id FK
+    }
+    _timescaledb_catalog_chunk_column_stats {
+        integer id PK
+    }
+    _timescaledb_catalog_chunk_constraint {
+        boolean osm_chunk
+    }
+    _timescaledb_catalog_chunk_rewrite {
+        name schema_name
+    }
+    _timescaledb_catalog_compression_algorithm {
+        integer status
+    }
+    _timescaledb_catalog_compression_chunk_size {
+        name table_name
+    }
+    _timescaledb_catalog_compression_settings {
+        integer chunk_id FK
+    }
+    _timescaledb_catalog_continuous_agg {
+        name column_name
+    }
+    _timescaledb_catalog_continuous_agg_migrate_plan {
+        integer hypertable_id FK
+    }
+    _timescaledb_catalog_continuous_agg_migrate_plan_step {
+        integer id PK
+    }
+    _timescaledb_catalog_continuous_aggs_bucket_function {
+        bigint range_end
+    }
+    _timescaledb_catalog_continuous_aggs_hypertable_invalidation_log {
+        bigint range_start
+    }
+    _timescaledb_catalog_continuous_aggs_invalidation_threshold {
+        boolean valid
+    }
+    _timescaledb_catalog_continuous_aggs_materialization_invalidation_log {
+        integer chunk_id FK
+    }
+    _timescaledb_catalog_continuous_aggs_materialization_ranges {
+        name constraint_name
+    }
+    _timescaledb_catalog_continuous_aggs_watermark {
+        integer dimension_slice_id FK
+    }
+    _timescaledb_catalog_dimension {
+        name hypertable_constraint_name
+    }
+    _timescaledb_catalog_dimension_slice {
+        regclass chunk_relid
+    }
+    _timescaledb_catalog_hypertable {
+        regclass new_relid
+    }
+    _timescaledb_catalog_metadata {
+        text description
+    }
+    _timescaledb_catalog_tablespace {
+        smallint id PK
+    }
+    _timescaledb_catalog_telemetry_event {
+        name name
+    }
+    _timescaledb_config_bgw_job {
+        smallint version
+    }
+_timescaledb_internal__compressed_hypertable_9 {
+        integer chunk_id PK FK
+    }
+    _timescaledb_internal_bgw_job_stat {
+        integer compressed_chunk_id FK
+    }
+    _timescaledb_internal_bgw_job_stat_history {
+        bigint compressed_heap_size
+    }
+    _timescaledb_internal_bgw_policy_chunk_stats {
+        bigint compressed_index_size
+    }
+    pgagent_pga_exception {
+        bigint compressed_toast_size
+    }
+    pgagent_pga_job {
+        bigint numrows_frozen_immediately
+    }
+    pgagent_pga_jobagent {
+        bigint numrows_post_compression
+    }
+    pgagent_pga_jobclass {
+        bigint numrows_pre_compression
+    }
+    pgagent_pga_joblog {
+        bigint uncompressed_heap_size
+    }
+    pgagent_pga_jobstep {
+        bigint uncompressed_index_size
+    }
+    pgagent_pga_jobsteplog {
+        bigint uncompressed_toast_size
+    }
+    pgagent_pga_schedule {
+        regclass compress_relid
+    }
+public_FA_14_AOI_DTL_202512 {
+        jsonb index
+    }
+public_FA_14_AOI_DTL_202601 {
+        text[] orderby
+    }
+public_FA_14_AOI_DTL_202602 {
+        boolean[] orderby_desc
+    }
+public_FA_14_AOI_DTL_202603 {
+        boolean[] orderby_nullsfirst
+    }
+public_FA_14_AOI_DTL_202604 {
+        regclass relid PK
+    }
+public_FA_14_AOI_DTL_202605 {
+        text[] segmentby
+    }
+public_FA_14_AOI_DTL_202606 {
+        name direct_view_name
+    }
+public_FA_14_AOI_DTL_202607 {
+        name direct_view_schema
+    }
+public_FA_14_AOI_DTL_202608 {
+        boolean finalized
+    }
+public_FA_14_AOI_DTL_202609 {
+        integer mat_hypertable_id PK FK
+    }
+public_FA_14_AOI_DTL_202610 {
+        boolean materialized_only
+    }
+public_FA_14_AOI_DTL_202611 {
+        integer parent_mat_hypertable_id FK
+    }
+public_FA_14_AOI_DTL_202612 {
+        name partial_view_name
+    }
+public_FA_14_AOI_DTL_202701 {
+        name partial_view_schema
+    }
+public_FA_14_AOI_DTL_202702 {
+        integer raw_hypertable_id FK
+    }
+public_FA_14_AOI_DTL_202703 {
+        name user_view_name
+    }
+public_FA_14_AOI_DTL_DEFAULT {
+        name user_view_schema
+    }
+public_FA_14_AOI_HDR {
+        timestamp_with_time_zone end_ts
+    }
+public_FA_24_SPI_DTL_202512 {
+        integer mat_hypertable_id PK
+    }
+public_FA_24_SPI_DTL_202601 {
+        timestamp_with_time_zone start_ts
+    }
+public_FA_24_SPI_DTL_202602 {
+        text user_view_definition
+    }
+public_FA_24_SPI_DTL_202603 {
+        jsonb config
+    }
+public_FA_24_SPI_DTL_202604 {
+        timestamp_with_time_zone end_ts
+    }
+public_FA_24_SPI_DTL_202605 {
+        integer mat_hypertable_id PK FK
+    }
+public_FA_24_SPI_DTL_202606 {
+        timestamp_with_time_zone start_ts
+    }
+public_FA_24_SPI_DTL_202607 {
+        text status
+    }
+public_FA_24_SPI_DTL_202608 {
+        integer step_id PK
+    }
+public_FA_24_SPI_DTL_202609 {
+        text type
+    }
+public_FA_24_SPI_DTL_202610 {
+        boolean bucket_fixed_width
+    }
+public_FA_24_SPI_DTL_202611 {
+        text bucket_func
+    }
+public_FA_24_SPI_DTL_202612 {
+        text bucket_offset
+    }
+public_FA_24_SPI_DTL_202701 {
+        text bucket_origin
+    }
+public_FA_24_SPI_DTL_202702 {
+        text bucket_timezone
+    }
+public_FA_24_SPI_DTL_202703 {
+        text bucket_width
+    }
+public_FA_24_SPI_DTL_DEFAULT {
+        integer mat_hypertable_id PK FK
+    }
+public_FA_24_SPI_HDR {
+        bigint greatest_modified_value
+    }
+public_FA_26_34_MOUNTER_HDR {
+        integer hypertable_id
+    }
+public_FA_2_MARKING_DTL_202512 {
+        bigint lowest_modified_value
+    }
+public_FA_2_MARKING_DTL_202601 {
+        integer hypertable_id PK FK
+    }
+public_FA_2_MARKING_DTL_202602 {
+        bigint watermark
+    }
+public_FA_2_MARKING_DTL_202603 {
+        bigint greatest_modified_value
+    }
+public_FA_2_MARKING_DTL_202604 {
+        bigint lowest_modified_value
+    }
+public_FA_2_MARKING_DTL_202605 {
+        integer materialization_id FK
+    }
+public_FA_2_MARKING_DTL_202606 {
+        bigint greatest_modified_value
+    }
+public_FA_2_MARKING_DTL_202607 {
+        bigint lowest_modified_value
+    }
+public_FA_2_MARKING_DTL_202608 {
+        integer materialization_id FK
+    }
+public_FA_2_MARKING_DTL_202609 {
+        integer mat_hypertable_id PK FK
+    }
+public_FA_2_MARKING_DTL_202610 {
+        bigint watermark
+    }
+public_FA_2_MARKING_DTL_202611 {
+        boolean aligned
+    }
+public_FA_2_MARKING_DTL_202612 {
+        name column_name
+    }
+public_FA_2_MARKING_DTL_202701 {
+        regtype column_type
+    }
+public_FA_2_MARKING_DTL_202702 {
+        bigint compress_interval_length
+    }
+public_FA_2_MARKING_DTL_202703 {
+        integer hypertable_id FK
+    }
+public_FA_2_MARKING_DTL_DEFAULT {
+        integer id PK
+    }
+public_FA_2_MARKING_HDR {
+        name integer_now_func
+    }
+public_FA_35_MOI_DTL_202512 {
+        name integer_now_func_schema
+    }
+public_FA_35_MOI_DTL_202601 {
+        bigint interval_length
+    }
+public_FA_35_MOI_DTL_202602 {
+        smallint num_slices
+    }
+public_FA_35_MOI_DTL_202603 {
+        name partitioning_func
+    }
+public_FA_35_MOI_DTL_202604 {
+        name partitioning_func_schema
+    }
+public_FA_35_MOI_DTL_202605 {
+        integer dimension_id FK
+    }
+public_FA_35_MOI_DTL_202606 {
+        integer id PK
+    _timescaledb_catalog_chunk ||--o{ _timescaledb_catalog_chunk : "chunk_compressed_chunk_id_fkey"
+    _timescaledb_catalog_chunk ||--o{ _timescaledb_catalog_chunk_column_stats : "chunk_column_stats_chunk_id_fkey"
+    _timescaledb_catalog_chunk ||--o{ _timescaledb_catalog_chunk_constraint : "chunk_constraint_chunk_id_fkey"
+    _timescaledb_catalog_chunk ||--o{ _timescaledb_catalog_compression_chunk_size : "compression_chunk_size_chunk_id_fkey"
+    _timescaledb_catalog_chunk ||--o{ _timescaledb_catalog_compression_chunk_size : "compression_chunk_size_compressed_chunk_id_fkey"
+    _timescaledb_catalog_continuous_agg ||--o{ _timescaledb_catalog_continuous_agg : "continuous_agg_parent_mat_hypertable_id_fkey"
+    _timescaledb_catalog_continuous_agg ||--o{ _timescaledb_catalog_continuous_aggs_materialization_invalidation_log : "continuous_aggs_materialization_invalid_materialization_id_fkey"
+    _timescaledb_catalog_continuous_agg ||--o{ _timescaledb_catalog_continuous_aggs_materialization_ranges : "continuous_aggs_materialization_ranges_materialization_id_fkey"
+    _timescaledb_catalog_continuous_agg ||--o{ _timescaledb_catalog_continuous_aggs_watermark : "continuous_aggs_watermark_mat_hypertable_id_fkey"
+    _timescaledb_catalog_continuous_agg_migrate_plan ||--o{ _timescaledb_catalog_continuous_agg_migrate_plan_step : "continuous_agg_migrate_plan_step_mat_hypertable_id_fkey"
+    _timescaledb_catalog_dimension ||--o{ _timescaledb_catalog_dimension_slice : "dimension_slice_dimension_id_fkey"
+    _timescaledb_catalog_dimension_slice ||--o{ _timescaledb_catalog_chunk_constraint : "chunk_constraint_dimension_slice_id_fkey"
+    _timescaledb_catalog_hypertable ||--o{ _timescaledb_catalog_chunk : "chunk_hypertable_id_fkey"
+    _timescaledb_catalog_hypertable ||--o{ _timescaledb_catalog_chunk_column_stats : "chunk_column_stats_hypertable_id_fkey"
+    _timescaledb_catalog_hypertable ||--o{ _timescaledb_catalog_continuous_agg : "continuous_agg_mat_hypertable_id_fkey"
+    _timescaledb_catalog_hypertable ||--o{ _timescaledb_catalog_continuous_agg : "continuous_agg_raw_hypertable_id_fkey"
+    _timescaledb_catalog_hypertable ||--o{ _timescaledb_catalog_continuous_aggs_bucket_function : "continuous_aggs_bucket_function_mat_hypertable_id_fkey"
+    _timescaledb_catalog_hypertable ||--o{ _timescaledb_catalog_continuous_aggs_invalidation_threshold : "continuous_aggs_invalidation_threshold_hypertable_id_fkey"
+    _timescaledb_catalog_hypertable ||--o{ _timescaledb_catalog_dimension : "dimension_hypertable_id_fkey"
+    _timescaledb_catalog_hypertable ||--o{ _timescaledb_catalog_hypertable : "hypertable_compressed_hypertable_id_fkey"
+    _timescaledb_catalog_hypertable ||--o{ _timescaledb_catalog_tablespace : "tablespace_hypertable_id_fkey"
+    pgagent_pga_job ||--o{ pgagent_pga_joblog : "pga_joblog_jlgjobid_fkey"
+    pgagent_pga_job ||--o{ pgagent_pga_jobstep : "pga_jobstep_jstjobid_fkey"
+    pgagent_pga_job ||--o{ pgagent_pga_schedule : "pga_schedule_jscjobid_fkey"
+    pgagent_pga_jobagent ||--o{ pgagent_pga_job : "pga_job_jobagentid_fkey"
+    pgagent_pga_jobclass ||--o{ pgagent_pga_job : "pga_job_jobjclid_fkey"
+    pgagent_pga_joblog ||--o{ pgagent_pga_jobsteplog : "pga_jobsteplog_jsljlgid_fkey"
+    pgagent_pga_jobstep ||--o{ pgagent_pga_jobsteplog : "pga_jobsteplog_jsljstid_fkey"
+    pgagent_pga_schedule ||--o{ pgagent_pga_exception : "pga_exception_jexscid_fkey"
+    }
+public_FA_35_MOI_DTL_202607 {
+        bigint range_end
+    }
+public_FA_35_MOI_DTL_202608 {
+        bigint range_start
+    }
+public_FA_35_MOI_DTL_202609 {
+        name associated_schema_name
+    }
+public_FA_35_MOI_DTL_202610 {
+        name associated_table_prefix
+    }
+public_FA_35_MOI_DTL_202611 {
+        name chunk_sizing_func_name
+    }
+public_FA_35_MOI_DTL_202612 {
+        name chunk_sizing_func_schema
+    }
+public_FA_35_MOI_DTL_202701 {
+        bigint chunk_target_size
+    }
+public_FA_35_MOI_DTL_202702 {
+        integer compressed_hypertable_id FK
+    }
+public_FA_35_MOI_DTL_202703 {
+        smallint compression_state
+    }
+public_FA_35_MOI_DTL_DEFAULT {
+        integer id PK
+    }
+public_FA_35_MOI_HDR {
+        smallint num_dimensions
+    }
+public_FA_42_AOI_DTL_202512 {
+        name schema_name
+    }
+public_FA_42_AOI_DTL_202601 {
+        integer status
+    }
+public_FA_42_AOI_DTL_202602 {
+        name table_name
+    }
+public_FA_42_AOI_DTL_202603 {
+        boolean include_in_telemetry
+    }
+public_FA_42_AOI_DTL_202604 {
+        name key PK
+    }
+public_FA_42_AOI_DTL_202605 {
+        text value
+    }
+public_FA_42_AOI_DTL_202606 {
+        integer hypertable_id FK
+    }
+public_FA_42_AOI_DTL_202607 {
+        integer id PK
+    }
+public_FA_42_AOI_DTL_202608 {
+        name tablespace_name
+    }
+public_FA_42_AOI_DTL_202609 {
+        jsonb body
+    }
+public_FA_42_AOI_DTL_202610 {
+        timestamp_with_time_zone created
+    }
+public_FA_42_AOI_DTL_202611 {
+        name tag
+    }
+public_FA_42_AOI_DTL_202612 {
+        name application_name
+    }
+public_FA_42_AOI_DTL_202701 {
+        name check_name
+    }
+public_FA_42_AOI_DTL_202702 {
+        name check_schema
+    }
+public_FA_42_AOI_DTL_202703 {
+        jsonb config
+    }
+public_FA_42_AOI_DTL_DEFAULT {
+        boolean fixed_schedule
+    }
+public_FA_42_AOI_HDR {
+        integer hypertable_id FK
+    }
+    public__mounter_sync {
+        integer id PK
+    }
+    public__mounter_tag {
+        timestamp_with_time_zone initial_start
+    }
+        integer max_retries
+        interval max_runtime
+        regrole owner
+        name proc_name
+        name proc_schema
+        interval retry_period
+        interval schedule_interval
+        boolean scheduled
+        text timezone
+        integer consecutive_crashes
+        integer consecutive_failures
+        integer flags
+        integer job_id PK FK
+        timestamp_with_time_zone last_finish
+        boolean last_run_success
+        timestamp_with_time_zone last_start
+        timestamp_with_time_zone last_successful_finish
+        timestamp_with_time_zone next_start
+        bigint total_crashes
+        interval total_duration
+        interval total_duration_failures
+        bigint total_failures
+        bigint total_runs
+        bigint total_successes
+        jsonb data
+        timestamp_with_time_zone execution_finish
+        timestamp_with_time_zone execution_start
+        bigint id PK
+        integer job_id
+        integer pid
+        boolean succeeded
+        integer chunk_id FK
+        integer job_id FK
+        timestamp_with_time_zone last_time_job_run
+        integer num_times_job_run
+        date jexdate
+        integer jexid PK
+        integer jexscid FK
+        time_without_time_zone jextime
+        integer jobagentid FK
+        timestamp_with_time_zone jobchanged
+        timestamp_with_time_zone jobcreated
+        text jobdesc
+        boolean jobenabled
+        text jobhostagent
+        integer jobid PK
+        integer jobjclid FK
+        timestamp_with_time_zone joblastrun
+        text jobname
+        timestamp_with_time_zone jobnextrun
+        timestamp_with_time_zone jaglogintime
+        integer jagpid PK
+        text jagstation
+        integer jclid PK
+        text jclname
+        interval jlgduration
+        integer jlgid PK
+        integer jlgjobid FK
+        timestamp_with_time_zone jlgstart
+character(1) jlgstatus
+        timestamp_with_time_zone jscnextrun
+        text jstcode
+        text jstconnstr
+        name jstdbname
+        text jstdesc
+        boolean jstenabled
+        integer jstid PK
+        integer jstjobid FK
+character(1) jstkind
+        text jstname
+character(1) jstonerror
+        interval jslduration
+        integer jslid PK
+        integer jsljlgid FK
+        integer jsljstid FK
+        text jsloutput
+        integer jslresult
+        timestamp_with_time_zone jslstart
+character(1) jslstatus
+        text jscdesc
+        boolean jscenabled
+        timestamp_with_time_zone jscend
+        boolean[] jschours
+        integer jscid PK
+        integer jscjobid FK
+        boolean[] jscminutes
+        boolean[] jscmonthdays
+        boolean[] jscmonths
+        text jscname
+        timestamp_with_time_zone jscstart
+        boolean[] jscweekdays
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(100) FILE_NM PK
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD PK
+character(1) POST_FLAG
+character_varying(10) WC_CD PK
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(15) AREA
+character_varying(15) AREAMAX
+character_varying(15) AREAMIN
+character_varying(10) ARRAY
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(10) COMPONENTID
+character_varying(10) DATA_TYPE
+character_varying(10) DATE
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(15) HEIGHT
+character_varying(15) HEIGHTMAX
+character_varying(15) HEIGHTMIN
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(30) LIBRARYNAME
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(100) MODEL
+character_varying(15) OFFSETX
+character_varying(15) OFFSETX2
+character_varying(15) OFFSETXERROR
+character_varying(15) OFFSETY
+character_varying(15) OFFSETY2
+character_varying(15) OFFSETYERROR
+character_varying(10) PADID
+character_varying(30) PADTYPE
+character_varying(10) PADVERIFICATION
+character_varying(10) PANEL
+character_varying(30) PANELBARCODE
+character_varying(10) PCBSKIP
+character_varying(10) PINNUMBER
+character_varying(10) PLANT_CD
+character_varying(15) POSX
+character_varying(15) POSY
+character_varying(15) REALAREA
+character_varying(15) REALVOLUME
+character_varying(30) RESULT
+character_varying(10) REVIEWRESULT
+character_varying(10) SHAPE
+character_varying(15) SIZEX
+character_varying(15) SIZEY
+character_varying(8) TIME
+character_varying(15) VOLMAX
+character_varying(15) VOLMIN
+character_varying(15) VOLUME
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(100) FILE_NM PK
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD PK
+character(1) POST_FLAG
+character_varying(10) WC_CD PK
+        bigint _Index
+character_varying(100) FILE_NM PK
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD PK
+character(1) POST_FLAG
+character_varying(10) WC_CD PK
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD
+character_varying(500) VALUE
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(100) FILE_NM PK
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD PK
+character(1) POST_FLAG
+character_varying(10) WC_CD PK
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(10) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(100) FILE_NM PK
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD PK
+character(1) POST_FLAG
+character_varying(10) WC_CD PK
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(10) ARRAYINDEX
+character_varying(30) BARCODE
+character_varying(10) BCODEBLOCK
+character_varying(10) BCODEFAILED
+character_varying(30) BCODESCANTYPE
+character_varying(10) CALLRESULT
+character_varying(30) COMPONENT
+character_varying(10) DATA_TYPE
+character_varying(20) ENDDATETIME
+        timestamp_without_time_zone FILE_DT
+character_varying(100) FILE_NM
+character_varying(30) INSPTYPE
+character_varying(10) JUDGETIMEOUT
+character_varying(10) LANE
+character_varying(10) LEADID
+character_varying(10) MACHINERESULT
+character_varying(10) MACH_CD
+        timestamp_without_time_zone MAKE_DT
+character_varying(30) PANELBARCODE
+character_varying(100) PCBMODEL
+character_varying(10) PCBSKIP
+character_varying(10) PLANT_CD
+character_varying(30) REVIEWRESULT
+character_varying(10) WC_CD
+        bigint _Index
+character_varying(100) FILE_NM PK
+        timestamp_without_time_zone MAKE_DT
+character_varying(10) PLANT_CD PK
+character(1) POST_FLAG
+character_varying(10) WC_CD PK
+        bigint _Index
+        bigint last_index
+        timestamp_with_time_zone _devicedate
+character_varying(20) _equipcode
+        timestamp_with_time_zone _insertdate
+character_varying(20) _linecode
+        text _tagname
+        text _type
+        text _value
+character_varying(20) _workcode
