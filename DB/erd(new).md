@@ -1,4 +1,6 @@
+```mermaid
 erDiagram
+
     FA_2_MARKING_HDR {
         bigint _Index
         varchar PLANT_CD PK
@@ -55,105 +57,55 @@ erDiagram
 
     FA_2_MARKING_DTL {
         bigint _Index
-        varchar PLANT_CD FK
-        varchar WC_CD FK
-        varchar FILE_NM FK
+        varchar PLANT_CD
+        varchar WC_CD
+        varchar FILE_NM
         timestamp FILE_DT
-        varchar VALUE
-        timestamp MAKE_DT
     }
 
     FA_14_AOI_DTL {
         bigint _Index
-        varchar PLANT_CD FK
-        varchar WC_CD FK
-        varchar FILE_NM FK
+        varchar PLANT_CD
+        varchar WC_CD
+        varchar FILE_NM
         timestamp FILE_DT
-        varchar MACH_CD
-        varchar LANE
-        varchar DATA_TYPE
-        varchar BARCODE
-        varchar PANELBARCODE
-        varchar ENDDATETIME
-        varchar PCBMODEL
     }
 
     FA_24_SPI_DTL {
         bigint _Index
-        varchar PLANT_CD FK
-        varchar WC_CD FK
-        varchar FILE_NM FK
+        varchar PLANT_CD
+        varchar WC_CD
+        varchar FILE_NM
         timestamp FILE_DT
-        varchar MACH_CD
-        varchar LANE
-        varchar DATA_TYPE
-        varchar PANELBARCODE
-        varchar MODEL
-        varchar MACHINERESULT
-        varchar REVIEWRESULT
     }
 
     FA_26_34_MOUNTER_DTL {
         bigint _Index
-        varchar PLANT_CD FK
-        varchar WC_CD FK
-        varchar FILE_NM FK
+        varchar PLANT_CD
+        varchar WC_CD
+        varchar FILE_NM
         timestamp FILE_DT
-        varchar MACH_CD
-        varchar STAGE
-        varchar LANE
-        varchar OUTPUT
-        varchar LOT_NM
-        varchar SECTION
-        varchar ROW_NUM
     }
 
     FA_35_MOI_DTL {
         bigint _Index
-        varchar PLANT_CD FK
-        varchar WC_CD FK
-        varchar FILE_NM FK
+        varchar PLANT_CD
+        varchar WC_CD
+        varchar FILE_NM
         timestamp FILE_DT
-        varchar MACH_CD
-        varchar LANE
-        varchar DATA_TYPE
-        varchar BARCODE
-        varchar PANELBARCODE
-        varchar ENDDATETIME
-        varchar PCBMODEL
     }
 
     FA_42_AOI_DTL {
         bigint _Index
-        varchar PLANT_CD FK
-        varchar WC_CD FK
-        varchar FILE_NM FK
+        varchar PLANT_CD
+        varchar WC_CD
+        varchar FILE_NM
         timestamp FILE_DT
-        varchar MACH_CD
-        varchar LANE
-        varchar DATA_TYPE
-        varchar BARCODE
-        varchar PANELBARCODE
-        varchar ENDDATETIME
-        varchar PCBMODEL
     }
 
-    _mounter_tag {
-        timestamptz _devicedate
-        varchar _linecode
-        varchar _workcode
-        varchar _equipcode
-        text _type
-        text _tagname
-        text _value
-        timestamptz _insertdate
-    }
-
-    FA_2_MARKING_HDR ||--o{ FA_2_MARKING_DTL : "PLANT_CD, WC_CD, FILE_NM"
-    FA_14_AOI_HDR ||--o{ FA_14_AOI_DTL : "PLANT_CD, WC_CD, FILE_NM"
-    FA_24_SPI_HDR ||--o{ FA_24_SPI_DTL : "PLANT_CD, WC_CD, FILE_NM"
-    FA_26_34_MOUNTER_HDR ||--o{ FA_26_34_MOUNTER_DTL : "PLANT_CD, WC_CD, FILE_NM"
-    FA_35_MOI_HDR ||--o{ FA_35_MOI_DTL : "PLANT_CD, WC_CD, FILE_NM"
-    FA_42_AOI_HDR ||--o{ FA_42_AOI_DTL : "PLANT_CD, WC_CD, FILE_NM"
-
-    FA_26_34_MOUNTER_DTL }o..o{ _mounter_tag : "LINE/WORKCODE, MACH/EQUIP, TIME"
+    FA_2_MARKING_HDR ||--o{ FA_2_MARKING_DTL
+    FA_14_AOI_HDR   ||--o{ FA_14_AOI_DTL
+    FA_24_SPI_HDR   ||--o{ FA_24_SPI_DTL
+    FA_26_34_MOUNTER_HDR ||--o{ FA_26_34_MOUNTER_DTL
+    FA_35_MOI_HDR   ||--o{ FA_35_MOI_DTL
+    FA_42_AOI_HDR   ||--o{ FA_42_AOI_DTL
