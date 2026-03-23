@@ -103,11 +103,9 @@ erDiagram
         timestamp FILE_DT
     }
 
-    %% 관계 (반드시 마지막에 위치)
-
-    FA_2_MARKING_HDR ||--o{ FA_2_MARKING_DTL
-    FA_14_AOI_HDR ||--o{ FA_14_AOI_DTL
-    FA_24_SPI_HDR ||--o{ FA_24_SPI_DTL
-    FA_26_34_MOUNTER_HDR ||--o{ FA_26_34_MOUNTER_DTL
-    FA_35_MOI_HDR ||--o{ FA_35_MOI_DTL
-    FA_42_AOI_HDR ||--o{ FA_42_AOI_DTL
+    FA_2_MARKING_HDR ||--o{ FA_2_MARKING_DTL : contains
+    FA_14_AOI_HDR ||--o{ FA_14_AOI_DTL : contains
+    FA_24_SPI_HDR ||--o{ FA_24_SPI_DTL : contains
+    FA_26_34_MOUNTER_HDR ||--o{ FA_26_34_MOUNTER_DTL : contains
+    FA_35_MOI_HDR ||--o{ FA_35_MOI_DTL : contains
+    FA_42_AOI_HDR ||--o{ FA_42_AOI_DTL : contains
