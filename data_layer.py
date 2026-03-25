@@ -84,6 +84,8 @@ BACKUP_OUTPUT_TAGS = {
     "InspectionData.LotOKParts",
 }
 
+BACKUP_DATE_SHIFT = pd.DateOffset(months=2)
+
 
 @lru_cache(maxsize=1)
 def get_engine():
@@ -266,6 +268,13 @@ def _parse_backup_filename_datetime(file_name: Any) -> pd.Timestamp:
         return pd.NaT
 
 
+def _shift_backup_datetime(value: Any) -> pd.Timestamp:
+    ts = pd.to_datetime(value, errors="coerce")
+    if pd.isna(ts):
+        return pd.NaT
+    return ts + BACKUP_DATE_SHIFT
+
+
 def _backup_machine_code(machine_hash: Any, machine_map: Dict[str, Dict[str, Any]]) -> str:
     row = machine_map.get(str(machine_hash), {})
     return str(row.get("machine_code") or row.get("machine_hash") or machine_hash or "-")
@@ -414,9 +423,9 @@ def _build_backup_raw_data(period: str = "전체") -> Dict[str, pd.DataFrame]:
         for r in file_df.itertuples(index=False):
             file_hash = str(getattr(r, "file_hash", ""))
             file_nm = getattr(r, "file_name", None)
-            event_ts = _parse_backup_datetime(getattr(r, "file_date", None), getattr(r, "file_time", None))
+            event_ts = _shift_backup_datetime(_parse_backup_datetime(getattr(r, "file_date", None), getattr(r, "file_time", None)))
             if pd.isna(event_ts):
-                event_ts = _parse_backup_filename_datetime(file_nm)
+                event_ts = _shift_backup_datetime(_parse_backup_filename_datetime(file_nm))
             if pd.notna(event_ts) and start_ts is not None and end_ts is not None:
                 event_day = pd.Timestamp(event_ts).normalize()
                 if event_day < start_ts or event_day > end_ts:
@@ -623,6 +632,288 @@ def generate_sample_data() -> Dict[str, pd.DataFrame]:
         "_meta": {"source": "sample", "is_sample": True},
     }
     for k, df in raw.items():
+        if isinstance(df, pd.DataFrame) and not df.empty:
+            df.columns = [c.lower() for c in df.columns]
+    return raw
+
+
+def generate_pickup_rca_sample_data() -> Dict[str, pd.DataFrame]:
+    issue_hours = [14, 15, 16, 17, 18]
+    base_times = [datetime(2026, 3, 24, hour, 0, 0) for hour in issue_hours]
+    line_id = "Line-1"
+    stage_no = 1
+    model_name = "MODEL-2"
+    lots = [
+        {"lot_id": "LOT001", "lot_name": "LOT001", "model_name": "MODEL-1", "line_id": line_id},
+        {"lot_id": "LOT002", "lot_name": "LOT002", "model_name": model_name, "line_id": line_id},
+        {"lot_id": "LOT003", "lot_name": "LOT003", "model_name": "MODEL-3", "line_id": line_id},
+        {"lot_id": "LOT101", "lot_name": "LOT101", "model_name": "MODEL-4", "line_id": "Line-1"},
+        {"lot_id": "LOT201", "lot_name": "LOT201", "model_name": "MODEL-5", "line_id": "Line-2"},
+        {"lot_id": "LOT202", "lot_name": "LOT202", "model_name": "MODEL-6", "line_id": "Line-2"},
+    ]
+    machine_specs = [
+        {"machine_id": "M04", "lot_id": "LOT001", "machine_order": 4, "line_id": "Line-1", "stage_no": 1},
+        {"machine_id": "M05", "lot_id": "LOT002", "machine_order": 5, "line_id": "Line-1", "stage_no": 1},
+        {"machine_id": "M06", "lot_id": "LOT003", "machine_order": 6, "line_id": "Line-1", "stage_no": 1},
+        {"machine_id": "M07", "lot_id": "LOT101", "machine_order": 7, "line_id": "Line-1", "stage_no": 2},
+        {"machine_id": "M11", "lot_id": "LOT201", "machine_order": 11, "line_id": "Line-2", "stage_no": 1},
+        {"machine_id": "M12", "lot_id": "LOT202", "machine_order": 12, "line_id": "Line-2", "stage_no": 2},
+    ]
+    lot_machine_rows = []
+    lot_machine_id_map = {}
+    machine_rows = []
+    stop_rows = []
+    pickup_rows = []
+    component_rows = []
+    component_pickup_rows = []
+    tag_rows = []
+    file_rows = []
+    mounter_rows = []
+    aoi_rows = []
+
+    for idx, ts in enumerate(base_times, start=1):
+        file_rows.append({"file_id": idx, "file_datetime": ts, "file_sequence": idx * 10})
+
+    for idx, spec in enumerate(machine_specs, start=1):
+        lot_machine_id_map[spec["machine_id"]] = idx
+        lot_machine_rows.append(
+            {
+                "lot_machine_id": idx,
+                "lot_id": spec["lot_id"],
+                "machine_id": spec["machine_id"],
+                "line_id": spec["line_id"],
+                "stage_no": spec["stage_no"],
+                "machine_order": spec["machine_order"],
+                "model_name": model_name if spec["machine_id"] == "M05" else f"MODEL-{idx}",
+            }
+        )
+        machine_rows.append(
+            {
+                "machine_id": spec["machine_id"],
+                "machine_name": f"Machine {spec['machine_id']}",
+                "line_id": spec["line_id"],
+                "stage_no": spec["stage_no"],
+                "machine_order": spec["machine_order"],
+            }
+        )
+
+    issue_component = {"component_id": "CMP-0004", "part_number": "PN-0004", "library_name": "LIB-2", "feeder_id": "FDR-5", "feeder_serial": "FDRS-5005", "nozzle_serial": "NOZ204"}
+    component_rows.append(issue_component)
+    component_rows.extend(
+        [
+            {"component_id": "CMP-0001", "part_number": "PN-0001", "library_name": "LIB-1", "feeder_id": "FDR-1", "feeder_serial": "FDRS-1001", "nozzle_serial": "NOZ201"},
+            {"component_id": "CMP-0002", "part_number": "PN-0002", "library_name": "LIB-1", "feeder_id": "FDR-2", "feeder_serial": "FDRS-2002", "nozzle_serial": "NOZ202"},
+            {"component_id": "CMP-0003", "part_number": "PN-0003", "library_name": "LIB-1", "feeder_id": "FDR-3", "feeder_serial": "FDRS-3003", "nozzle_serial": "NOZ203"},
+        ]
+    )
+
+    for hour_idx, ts in enumerate(base_times):
+        for spec in machine_specs:
+            is_issue_machine = spec["machine_id"] == "M05"
+            lot_id = spec["lot_id"]
+            current_line = spec["line_id"]
+            current_stage = spec["stage_no"]
+            is_same_stage_peer = current_line == "Line-1" and current_stage == 1 and not is_issue_machine
+            if is_issue_machine:
+                output_value = 360 - hour_idx * 24
+            elif is_same_stage_peer:
+                output_value = 420 - hour_idx * 8
+            elif current_line == "Line-1" and current_stage == 2:
+                output_value = 405 - hour_idx * 6
+            elif current_line == "Line-2" and current_stage == 1:
+                output_value = 398 - hour_idx * 5
+            else:
+                output_value = 392 - hour_idx * 4
+            mounter_rows.append(
+                {
+                    "plant_cd": "P01",
+                    "wc_cd": "WC01",
+                    "file_nm": f"FILE_{hour_idx + 1:03d}.csv",
+                    "file_dt": ts,
+                    "mach_cd": spec["machine_id"],
+                    "stage": str(current_stage),
+                    "lane": current_line,
+                    "output": output_value,
+                    "lot_nm": lot_id,
+                    "section": "S1",
+                    "row_num": hour_idx + 1,
+                    "item": "pickup_output",
+                    "result": str(output_value),
+                    "make_dt": ts,
+                }
+            )
+            if is_issue_machine:
+                pickup_count = 1000 - hour_idx * 25
+                error_count = 24 + hour_idx * 5
+                pickup_error_count = 18 + hour_idx * 4
+                recognition_error_count = 3 + (hour_idx % 2)
+                component_id = issue_component["component_id"]
+                stop_reason = "PICKUP_ERR"
+                stop_duration = 85 + hour_idx * 18
+                stop_count = 2 + int(hour_idx >= 2)
+                tag_name = "Pwait"
+                quality_flag = "FAIL"
+                review_result = "FAIL"
+            elif current_line == "Line-1" and current_stage == 2:
+                pickup_count = 995 + hour_idx * 8
+                error_count = 5 + (hour_idx % 2)
+                pickup_error_count = 3 + (hour_idx % 2)
+                recognition_error_count = 1
+                component_id = "CMP-0003"
+                stop_reason = "CHANGEOVER"
+                stop_duration = 18 + hour_idx * 3
+                stop_count = 1
+                tag_name = "WAIT_PRE"
+                quality_flag = "PASS"
+                review_result = "PASS"
+            elif current_line == "Line-2" and current_stage == 1:
+                pickup_count = 1005 + hour_idx * 6
+                error_count = 4 + (hour_idx % 2)
+                pickup_error_count = 2 + (hour_idx % 2)
+                recognition_error_count = 1
+                component_id = "CMP-0002"
+                stop_reason = "MINOR_ADJ"
+                stop_duration = 14 + hour_idx * 2
+                stop_count = 1
+                tag_name = "RUN"
+                quality_flag = "PASS"
+                review_result = "PASS"
+            else:
+                pickup_count = 980 + hour_idx * 10
+                error_count = 2 + (hour_idx % 2)
+                pickup_error_count = 1 + (hour_idx % 2)
+                recognition_error_count = 0
+                component_id = "CMP-0001" if spec["machine_id"] == "M04" else "CMP-0002"
+                stop_reason = "MINOR_ADJ"
+                stop_duration = 8 + hour_idx * 2
+                stop_count = 1
+                tag_name = "RUN"
+                quality_flag = "PASS"
+                review_result = "PASS"
+
+            pickup_rows.append(
+                {
+                    "machine_id": spec["machine_id"],
+                    "lot_id": lot_id,
+                    "line_id": current_line,
+                    "stage_no": current_stage,
+                    "pickup_count": pickup_count,
+                    "error_count": error_count,
+                    "pickup_error_count": pickup_error_count,
+                    "recognition_error_count": recognition_error_count,
+                }
+            )
+            component_pickup_rows.append(
+                {
+                    "component_id": component_id,
+                    "machine_id": spec["machine_id"],
+                    "lot_id": lot_id,
+                    "line_id": current_line,
+                    "stage_no": current_stage,
+                    "pickup_count": pickup_count,
+                    "error_count": error_count,
+                    "pickup_error_count": pickup_error_count,
+                    "recognition_error_count": recognition_error_count,
+                    "defect_type": "Placement Offset" if is_issue_machine else "Minor Noise",
+                    "recorded_at": ts,
+                }
+            )
+            stop_rows.append(
+                {
+                    "stop_reason_code": stop_reason,
+                    "lot_machine_id": lot_machine_id_map.get(spec["machine_id"], 1),
+                    "duration_sec": stop_duration,
+                    "stop_count": stop_count,
+                    "recorded_at": ts + timedelta(minutes=5),
+                    "source_file_id": hour_idx + 1,
+                }
+            )
+            tag_rows.append(
+                {
+                    "_devicedate": ts + timedelta(minutes=2),
+                    "_linecode": current_line,
+                    "_workcode": f"WC{current_stage:02d}",
+                    "_equipcode": spec["machine_id"],
+                    "_type": "STATE",
+                    "_tagname": tag_name,
+                    "_value": "1",
+                    "_insertdate": ts + timedelta(minutes=2, seconds=5),
+                }
+            )
+
+        aoi_result = "FAIL" if hour_idx >= 1 else "PASS"
+        aoi_rows.append(
+            {
+                "plant_cd": "P01",
+                "wc_cd": "WC01",
+                "file_nm": f"AOI_{hour_idx + 1:03d}.csv",
+                "file_dt": ts + timedelta(minutes=30),
+                "mach_cd": "AOI01",
+                "lane": line_id,
+                "lot_id": "LOT002",
+                "data_type": "AOI",
+                "barcode": f"BC-{hour_idx + 1:03d}",
+                "panelbarcode": f"PB-{hour_idx + 1:03d}",
+                "enddatetime": (ts + timedelta(minutes=30)).strftime("%Y-%m-%d %H:%M:%S"),
+                "pcbmodel": model_name,
+                "machineresult": aoi_result,
+                "reviewresult": aoi_result,
+            }
+        )
+
+    hdr_rows = [
+        {
+            "plant_cd": "P01",
+            "wc_cd": "WC01",
+            "file_nm": f"FILE_{idx + 1:03d}.csv",
+            "make_dt": ts,
+            "post_flag": "Y",
+        }
+        for idx, ts in enumerate(base_times)
+    ]
+    hdr = pd.DataFrame(hdr_rows)
+    raw = {
+        "fa_26_34_mounter_hdr": hdr.copy(),
+        "fa_26_34_mounter_dtl": pd.DataFrame(mounter_rows),
+        "fa_14_aoi_hdr": hdr.copy(),
+        "fa_14_aoi_dtl": pd.DataFrame(aoi_rows),
+        "fa_24_spi_hdr": hdr.copy(),
+        "fa_24_spi_dtl": pd.DataFrame(),
+        "fa_35_moi_hdr": hdr.copy(),
+        "fa_35_moi_dtl": pd.DataFrame(),
+        "fa_42_aoi_hdr": hdr.copy(),
+        "fa_42_aoi_dtl": pd.DataFrame(),
+        "_mounter_tag": pd.DataFrame(tag_rows),
+        "machine_time_summary": pd.DataFrame(),
+        "stop_log": pd.DataFrame(stop_rows),
+        "stop_reason": pd.DataFrame(
+            [
+                ("PICKUP_ERR", "Pickup Error", "Quality"),
+                ("MINOR_ADJ", "Minor Adjustment", "Process"),
+            ],
+            columns=["stop_reason_code", "stop_reason_name", "stop_reason_group"],
+        ),
+        "lot_machine": pd.DataFrame(lot_machine_rows),
+        "machine": pd.DataFrame(machine_rows),
+        "lot": pd.DataFrame(lots),
+        "file": pd.DataFrame(file_rows),
+        "pickup_error_summary": pd.DataFrame(pickup_rows),
+        "component_pickup_summary": pd.DataFrame(component_pickup_rows),
+        "component": pd.DataFrame(component_rows),
+        "_meta": {
+            "source": "pickup_rca_sample",
+            "is_sample": True,
+            "scenario": "pickup_rca",
+            "window_start": "2026-03-24 14:00:00",
+            "window_end": "2026-03-24 18:00:00",
+            "machine_id": "M05",
+            "lot_id": "LOT002",
+            "feeder_id": "FDR-5",
+            "part_number": "PN-0004",
+            "nozzle_serial": "NOZ204",
+        },
+    }
+    for key, df in raw.items():
         if isinstance(df, pd.DataFrame) and not df.empty:
             df.columns = [c.lower() for c in df.columns]
     return raw

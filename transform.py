@@ -124,6 +124,27 @@ def normalize_cause_group(value: str) -> str:
     return mapping.get(normalized, str(value or "Other").strip() or "Other")
 
 
+def infer_cause_family(cause_group: str, cause_detail: str) -> str:
+    text = f"{cause_group} {cause_detail}".upper()
+    if any(k in text for k in ["PICKUP", "FEED", "FEEDER", "REEL"]):
+        return "feeder"
+    if any(k in text for k in ["NOZZ", "RECOG", "VISION", "CAM", "MARK"]):
+        return "vision"
+    if any(k in text for k in ["PLACE", "OFFSET", "ALIGN", "COORD", "HEAD"]):
+        return "placement"
+    if any(k in text for k in ["TRANSFER", "CONVEY", "INTERLOCK", "CVN"]):
+        return "transfer"
+    if any(k in text for k in ["WAIT_PRE", "UPSTREAM", "BWAIT", "MCFWAIT", "FWAIT"]):
+        return "upstream"
+    if any(k in text for k in ["WAIT_POST", "DOWNSTREAM", "RWAIT", "MCRWAIT"]):
+        return "downstream"
+    if any(k in text for k in ["QUALITY", "INSPECT", "DMISS", "BMISS", "FAIL", "BAD"]):
+        return "quality"
+    if any(k in text for k in ["STOP", "PRD", "SCSTOP", "SCESTOP", "OTHR"]):
+        return "process"
+    return "unknown"
+
+
 def classify_tag_event(tag: pd.DataFrame) -> pd.DataFrame:
     if tag.empty:
         return pd.DataFrame(index=tag.index)
@@ -1145,7 +1166,11 @@ def build_equipment_overview(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
         return pd.DataFrame()
     frames = []
     if not shop.empty and "machine_id" in shop.columns:
-        prod = shop.groupby(["machine_id", "line_id", "stage_no", "machine_order"], as_index=False).agg(
+        shop_use = shop.copy()
+        if "output_qty" not in shop_use.columns:
+            shop_use["output_qty"] = 1.0
+        prod_group_cols = [c for c in ["machine_id", "line_id", "stage_no", "machine_order"] if c in shop.columns]
+        prod = shop_use.groupby(prod_group_cols, as_index=False).agg(
             production_rows=("event_ts", "size"),
             output_qty=("output_qty", "sum"),
             event_rows=("event_ts", "size"),
@@ -1775,7 +1800,10 @@ def build_rca_loss_path_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     for keys, grp in tmp.groupby(group_cols, dropna=False):
         key_map = dict(zip(group_cols, keys if isinstance(keys, tuple) else (keys,)))
         impact = float(grp[metric_col].sum())
-        events = int(len(grp))
+        if not stop.empty and "stop_count" in grp.columns:
+            events = int(pd.to_numeric(grp["stop_count"], errors="coerce").fillna(0).sum())
+        else:
+            events = int(len(grp))
         lot_count = int(grp["lot_id"].nunique()) if "lot_id" in grp.columns else 0
         day_count = int(grp["day"].nunique()) if "day" in grp.columns else 0
         hour_count = int(grp["hour"].nunique()) if "hour" in grp.columns else 0
@@ -1783,6 +1811,8 @@ def build_rca_loss_path_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
         top_day = _mode_or_top(grp["day"], grp[metric_col]) if "day" in grp.columns else "-"
         repeat_score = _safe_div(events, max(lot_count, 1)) + _safe_div(events, max(hour_count, 1))
         path_key = " | ".join([str(key_map.get(c, "-")) for c in ["line_id", "stage_no", "machine_id", "cause_group", "cause_detail"]])
+        impact_formula = "정지시간 합계(sec)" if not stop.empty else "proxy score 합계"
+        impact_unit = "sec" if not stop.empty else "score"
         rows.append({
             "path_key": path_key,
             "line_id": key_map.get("line_id", "-"),
@@ -1790,6 +1820,10 @@ def build_rca_loss_path_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
             "machine_id": key_map.get("machine_id", "-"),
             "cause_group": key_map.get("cause_group", "Proxy"),
             "cause_detail": key_map.get("cause_detail", "-"),
+            "cause_family": infer_cause_family(str(key_map.get("cause_group", "Proxy")), str(key_map.get("cause_detail", "-"))),
+            "event_group": "STOP" if not stop.empty else "PROXY",
+            "metric_type": "stop_time_sec" if not stop.empty else "proxy_score",
+            "impact_unit": impact_unit,
             "impact": impact,
             "events": events,
             "lot_count": lot_count,
@@ -1797,9 +1831,10 @@ def build_rca_loss_path_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
             "hour_count": hour_count,
             "when": f"{top_day} / {int(top_hour):02d}시" if pd.notna(top_hour) and top_hour != "-" else str(top_day),
             "where": f"{key_map.get('line_id', '-')} / Stage {key_map.get('stage_no', '-')} / {key_map.get('machine_id', '-')}",
-            "how_much": f"{impact:,.0f} ({events}건)",
+            "how_much": f"{impact:,.0f} {impact_unit} / {events}건",
             "repeat": f"{events}건 / LOT {lot_count} / 시간대 {hour_count}",
             "what": f"{key_map.get('cause_group', 'Proxy')} / {key_map.get('cause_detail', '-')}",
+            "impact_formula": impact_formula,
             "repeat_score": repeat_score,
         })
     out = pd.DataFrame(rows)
@@ -1968,6 +2003,10 @@ def build_rca_timeline_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
     group_cols = [c for c in ["day", "hour", "line_id", "stage_no", "machine_id", "cause_group", "cause_detail"] if c in tmp.columns]
     out = tmp.groupby(group_cols, as_index=False).agg(metric_value=(metric, "sum"), events=("event_ts", "size"))
     out["path_key"] = out.apply(lambda r: " | ".join([str(r.get(c, "-")) for c in ["line_id", "stage_no", "machine_id", "cause_group", "cause_detail"]]), axis=1)
+    out["metric_type"] = "stop_time_sec" if not stop.empty else "proxy_score"
+    out["event_group"] = "STOP" if not stop.empty else "PROXY"
+    out["impact_unit"] = "sec" if not stop.empty else "score"
+    out["cause_family"] = out.apply(lambda r: infer_cause_family(str(r.get("cause_group", "")), str(r.get("cause_detail", ""))), axis=1)
     return out.sort_values(["day", "hour"], ascending=True)
 
 
@@ -1981,12 +2020,20 @@ def build_rca_hotspot_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
         reason_hotspot["hotspot_type"] = "cause"
         reason_hotspot["cause_group"] = "Stop"
         reason_hotspot["cause_detail"] = reason_hotspot["stop_like_reason"]
+        reason_hotspot["cause_family"] = reason_hotspot.apply(lambda r: infer_cause_family(str(r.get("cause_group", "")), str(r.get("cause_detail", ""))), axis=1)
+        reason_hotspot["event_group"] = "STOP"
+        reason_hotspot["metric_type"] = "stop_time_sec"
+        reason_hotspot["impact_unit"] = "sec"
         reason_hotspot["path_key"] = reason_hotspot["cause_detail"].apply(lambda x: f"- | - | - | Stop | {x}")
         rows.append(reason_hotspot.drop(columns=["stop_like_reason"]))
         by_machine = stop.groupby(["machine_id", "line_id"], as_index=False).agg(impact=("duration_sec", "sum"), events=("stop_count", "sum"))
         by_machine["hotspot_type"] = "machine"
         by_machine["cause_group"] = "Stop"
         by_machine["cause_detail"] = "stop_time"
+        by_machine["cause_family"] = "process"
+        by_machine["event_group"] = "STOP"
+        by_machine["metric_type"] = "stop_time_sec"
+        by_machine["impact_unit"] = "sec"
         by_machine["path_key"] = by_machine.apply(lambda r: f"{r.get('line_id', '-')} | - | {r.get('machine_id', '-')} | Stop | stop_time", axis=1)
         rows.append(by_machine)
         if "stage_no" in stop.columns:
@@ -1994,11 +2041,19 @@ def build_rca_hotspot_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
             by_stage["hotspot_type"] = "stage"
             by_stage["cause_group"] = "Stop"
             by_stage["cause_detail"] = "stage_time"
+            by_stage["cause_family"] = "process"
+            by_stage["event_group"] = "STOP"
+            by_stage["metric_type"] = "stop_time_sec"
+            by_stage["impact_unit"] = "sec"
             by_stage["path_key"] = by_stage.apply(lambda r: f"{r.get('line_id', '-')} | {r.get('stage_no', '-')} | - | Stop | stage_time", axis=1)
             rows.append(by_stage)
     elif not proxy.empty:
         by_machine = proxy.groupby(["machine_id", "line_id", "cause_group", "cause_detail"], as_index=False).agg(impact=("proxy_score", "sum"), events=("proxy_score", "size"))
         by_machine["hotspot_type"] = "machine"
+        by_machine["cause_family"] = by_machine.apply(lambda r: infer_cause_family(str(r.get("cause_group", "")), str(r.get("cause_detail", ""))), axis=1)
+        by_machine["event_group"] = np.where(by_machine["cause_group"].astype(str).str.contains("Quality", case=False, na=False), "QUALITY", np.where(by_machine["cause_group"].astype(str).str.contains("Stop", case=False, na=False), "STOP", "PROXY"))
+        by_machine["metric_type"] = "proxy_score"
+        by_machine["impact_unit"] = "score"
         by_machine["path_key"] = by_machine.apply(lambda r: f"{r.get('line_id', '-')} | - | {r.get('machine_id', '-')} | {r.get('cause_group', 'Proxy')} | {r.get('cause_detail', '-')}", axis=1)
         rows.append(by_machine)
     if not insp.empty:
@@ -2006,6 +2061,10 @@ def build_rca_hotspot_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
         by_defect["hotspot_type"] = "defect"
         by_defect["cause_group"] = "Quality"
         by_defect["cause_detail"] = by_defect["quality_flag"]
+        by_defect["cause_family"] = "quality"
+        by_defect["event_group"] = "QUALITY"
+        by_defect["metric_type"] = "defect_count"
+        by_defect["impact_unit"] = "count"
         by_defect["path_key"] = by_defect.apply(lambda r: f"{r.get('line_id', '-')} | - | {r.get('machine_id', '-')} | Quality | {r.get('quality_flag', '-')}", axis=1)
         rows.append(by_defect.drop(columns=["quality_flag"]))
     if not rows:
@@ -2033,8 +2092,15 @@ def build_rca_repeat_pattern_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFram
     group_cols = [c for c in ["line_id", "stage_no", "machine_id", "cause_group", "cause_detail", "hour", "lot_id"] if c in tmp.columns]
     if not group_cols:
         return pd.DataFrame()
-    out = tmp.groupby(group_cols, as_index=False).agg(impact=(metric, "sum"), events=("event_ts" if "event_ts" in tmp.columns else metric, "size"))
+    if not stop.empty and "stop_count" in tmp.columns:
+        out = tmp.groupby(group_cols, as_index=False).agg(impact=(metric, "sum"), events=("stop_count", "sum"))
+    else:
+        out = tmp.groupby(group_cols, as_index=False).agg(impact=(metric, "sum"), events=("event_ts" if "event_ts" in tmp.columns else metric, "size"))
     out["path_key"] = out.apply(lambda r: " | ".join([str(r.get(c, "-")) for c in ["line_id", "stage_no", "machine_id", "cause_group", "cause_detail"]]), axis=1)
+    out["metric_type"] = "stop_time_sec" if not stop.empty else "proxy_score"
+    out["event_group"] = "STOP" if not stop.empty else "PROXY"
+    out["impact_unit"] = "sec" if not stop.empty else "score"
+    out["cause_family"] = out.apply(lambda r: infer_cause_family(str(r.get("cause_group", "")), str(r.get("cause_detail", ""))), axis=1)
     def _pattern(row):
         items = []
         for c in ["machine_id", "cause_group", "cause_detail", "hour", "lot_id"]:
@@ -2081,6 +2147,10 @@ def build_rca_drilldown_view(clean: Dict[str, pd.DataFrame]) -> pd.DataFrame:
         out["cause_detail"] = np.where(out["source_type"].eq("stop"), out.get("stop_like_reason", "UNKNOWN"), np.where(out["source_type"].eq("inspection"), out.get("quality_flag", "UNKNOWN"), out.get("cause_detail", "UNKNOWN")))
     if "path_key" not in out.columns:
         out["path_key"] = out.apply(lambda r: " | ".join([str(r.get(c, "-")) for c in ["line_id", "stage_no", "machine_id", "cause_group", "cause_detail"]]), axis=1)
+    out["metric_type"] = np.where(out["source_type"].eq("stop"), "stop_time_sec", np.where(out["source_type"].eq("inspection"), "defect_count", "proxy_score"))
+    out["event_group"] = np.where(out["source_type"].eq("stop"), "STOP", np.where(out["source_type"].eq("inspection"), "QUALITY", "PROXY"))
+    out["impact_unit"] = np.where(out["source_type"].eq("stop"), "sec", np.where(out["source_type"].eq("inspection"), "count", "score"))
+    out["cause_family"] = out.apply(lambda r: infer_cause_family(str(r.get("cause_group", "")), str(r.get("cause_detail", ""))), axis=1)
     return out
 
 
