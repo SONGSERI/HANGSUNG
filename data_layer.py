@@ -1,6 +1,8 @@
 import csv
+import gzip
 import io
 import os
+import pickle
 import re
 import tarfile
 from datetime import datetime, timedelta
@@ -26,6 +28,7 @@ RAW_LOAD_SPECS = {
 }
 
 BACKUP_ARCHIVE_PATH = os.path.join(os.path.dirname(__file__), "db", "nexedge")
+MOUNT_DEMO_SNAPSHOT_PATH = os.path.join(os.path.dirname(__file__), "db", "mount_demo_snapshot.pkl.gz")
 
 BACKUP_TABLE_COLUMNS = {
     "machine": ["machine_hash", "machine_code", "line_no", "stage_no"],
@@ -573,6 +576,45 @@ def load_raw_data(period: str = "전체") -> Dict[str, pd.DataFrame]:
     if "_meta" not in data:
         data["_meta"] = {"source": "db", "is_sample": False, "live_table": None, "live_count": 0}
     return data
+
+
+def load_mount_demo_snapshot() -> Dict[str, pd.DataFrame]:
+    if not os.path.exists(MOUNT_DEMO_SNAPSHOT_PATH):
+        return {}
+    try:
+        with gzip.open(MOUNT_DEMO_SNAPSHOT_PATH, "rb") as f:
+            data = pickle.load(f)
+        if not isinstance(data, dict):
+            return {}
+        for key, value in data.items():
+            if isinstance(value, pd.DataFrame) and not value.empty:
+                value.columns = [c.lower() for c in value.columns]
+        meta = data.get("_meta", {}) if isinstance(data.get("_meta", {}), dict) else {}
+        data["_meta"] = {
+            **meta,
+            "source": "demo_snapshot",
+            "snapshot_path": MOUNT_DEMO_SNAPSHOT_PATH,
+        }
+        return data
+    except Exception:
+        return {}
+
+
+def save_mount_demo_snapshot(data: Dict[str, pd.DataFrame]) -> str:
+    serializable = {}
+    for key, value in data.items():
+        if isinstance(value, pd.DataFrame):
+            serializable[key] = value.copy()
+        else:
+            serializable[key] = value
+    meta = serializable.get("_meta", {}) if isinstance(serializable.get("_meta", {}), dict) else {}
+    serializable["_meta"] = {
+        **meta,
+        "source": "demo_snapshot",
+    }
+    with gzip.open(MOUNT_DEMO_SNAPSHOT_PATH, "wb") as f:
+        pickle.dump(serializable, f, protocol=pickle.HIGHEST_PROTOCOL)
+    return MOUNT_DEMO_SNAPSHOT_PATH
 
 
 def generate_sample_data() -> Dict[str, pd.DataFrame]:
