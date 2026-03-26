@@ -6,6 +6,7 @@ import urllib.error
 import urllib.request
 from typing import Dict
 
+import pandas as pd
 import plotly.express as px
 import streamlit as st
 
@@ -225,6 +226,7 @@ def render_ai_demo_tab() -> None:
         st.caption("직접 입력한 질문이 있으면 그 질문을 우선 실행하고, 없으면 선택한 추천 질문을 실행합니다.")
 
     question = custom_question.strip() or selected_item["question"]
+    question_key = selected_item["tab_key"] if not custom_question.strip() else "custom"
 
     def _answer_for_question(user_question: str, question_key: str) -> tuple[str, list[str], list[str], str]:
         q = user_question.lower()
@@ -262,7 +264,7 @@ def render_ai_demo_tab() -> None:
                 "흡착 관련 에러가 특정 부품에서 반복되는지 확인",
                 "같은 시간대 AOI와 LOT 영향 연결 여부 확인",
             ]
-            return answer, evidence, next_checks, "machine_cause"
+            return answer, evidence, next_checks, "machine_focus"
 
         if question_key == "cause" or any(token in q for token in ["원인", "피더", "노즐", "부품", "흡착"]):
             answer = (
@@ -279,7 +281,7 @@ def render_ai_demo_tab() -> None:
                 "NZ-03 노즐 마모 및 오염 확인",
                 "PN-004 공급 안정성과 흡착 조건 확인",
             ]
-            return answer, evidence, next_checks, "machine_cause"
+            return answer, evidence, next_checks, "cause_material"
 
         if question_key == "action" or any(token in q for token in ["조치", "예방", "무엇을", "어떻게", "해야", "대응"]):
             answer = (
@@ -295,7 +297,7 @@ def render_ai_demo_tab() -> None:
                 "예방 조치: 기준 생산량과 택타임 기준 월별 재점검",
                 "확산 방지: 영향 LOT와 인접 LOT 비교",
             ]
-            return answer, evidence, next_checks, "action"
+            return answer, evidence, next_checks, "action_plan"
 
         if question_key == "detection":
             answer = (
@@ -312,7 +314,7 @@ def render_ai_demo_tab() -> None:
                 "실장기 공정 내부 설비 비교로 드릴다운",
                 "동시간대 품질 영향 여부 확인",
             ]
-            return answer, evidence, next_checks, "machine_cause"
+            return answer, evidence, next_checks, "detection_flow"
 
         answer = (
             f"가장 먼저 점검해야 할 대상은 "
@@ -330,32 +332,157 @@ def render_ai_demo_tab() -> None:
             "피더 정렬, 노즐 상태, 부품 흡착 조건 확인",
             "같은 시간대 품질과 LOT 영향이 같이 나타나는지 확인",
         ]
-        return answer, evidence, next_checks, "machine_cause"
+        return answer, evidence, next_checks, "machine_focus"
 
-    if "ai_demo_last_question" not in st.session_state:
-        st.session_state["ai_demo_last_question"] = selected_item["question"]
-    if "ai_demo_last_question_key" not in st.session_state:
-        st.session_state["ai_demo_last_question_key"] = selected_item["tab_key"]
-    if run_clicked:
-        st.session_state["ai_demo_last_question"] = question
-        st.session_state["ai_demo_last_question_key"] = selected_item["tab_key"] if not custom_question.strip() else "custom"
-
-    final_question = st.session_state["ai_demo_last_question"]
-    final_question_key = st.session_state.get("ai_demo_last_question_key", selected_item["tab_key"])
-    fallback_answer, evidence, next_checks, answer_type = _answer_for_question(final_question, final_question_key)
-    llm_answer, llm_model = _call_openai_llm(final_question)
+    llm_cache = st.session_state.setdefault("ai_demo_llm_cache", {})
+    llm_cache_key = f"{question_key}::{question}"
+    fallback_answer, evidence, next_checks, answer_type = _answer_for_question(question, question_key)
+    if llm_cache_key not in llm_cache or run_clicked:
+        llm_cache[llm_cache_key] = _call_openai_llm(question)
+    llm_answer, llm_model = llm_cache.get(llm_cache_key, (None, None))
     answer = llm_answer or fallback_answer
 
     def _render_supporting_view(view_type: str) -> None:
         st.markdown("#### 관련 데이터")
+        if view_type == "detection_flow":
+            line_time = detection["line_time"].copy()
+            stage_summary = detection["stage_summary"].copy()
+            left, right = st.columns(2)
+            with left:
+                if not line_time.empty:
+                    line_view = line_time.rename(
+                        columns={
+                            "timestamp": "시간",
+                            "line_actual_output": "실제 생산량",
+                            "line_expected_output": "계획 생산량",
+                        }
+                    )
+                    fig = px.line(line_view, x="시간", y=["실제 생산량", "계획 생산량"], markers=True, title="시간대별 실제 생산량 vs 계획 생산량")
+                    st.plotly_chart(fig, use_container_width=True, key="ai_demo_detection_flow_line")
+                else:
+                    st.info("라인 시계열 데이터가 없습니다.")
+            with right:
+                if not stage_summary.empty:
+                    stage_view = stage_summary.rename(
+                        columns={
+                            "stage_name": "공정",
+                            "actual_output": "실제 생산량",
+                            "expected_output": "계획 생산량",
+                            "output_gap": "생산량 차이",
+                            "avg_cycle_delay_sec": "평균 지연 시간(초)",
+                        }
+                    )
+                    st.dataframe(stage_view[["공정", "실제 생산량", "계획 생산량", "생산량 차이", "평균 지연 시간(초)"]], use_container_width=True, hide_index=True)
+                else:
+                    st.info("공정 비교 데이터가 없습니다.")
+            return
+
+        if view_type == "machine_focus":
+            machine_rank = diagnosis["machine_rank"].copy()
+            material_context = data["material_context"].copy()
+            left, right = st.columns(2)
+            with left:
+                if not machine_rank.empty:
+                    machine_view = machine_rank.rename(
+                        columns={
+                            "machine_id": "설비",
+                            "output_gap": "생산량 차이",
+                            "pickup_error_count": "흡착 에러 수",
+                            "cycle_delay_sec": "Cycle 지연(초)",
+                            "actual_output": "실제 생산량",
+                            "expected_output": "계획 생산량",
+                            "confidence": "신뢰도",
+                            "diagnosis_note": "해석",
+                        }
+                    )
+                    fig = px.bar(machine_view, x="설비", y="생산량 차이", color="흡착 에러 수", text="Cycle 지연(초)", title="실장기 설비별 비교")
+                    st.plotly_chart(fig, use_container_width=True, key="ai_demo_machine_focus_bar")
+                else:
+                    st.info("설비 비교 데이터가 없습니다.")
+            with right:
+                if not machine_rank.empty:
+                    machine_view = machine_rank.rename(
+                        columns={
+                            "machine_id": "설비",
+                            "actual_output": "실제 생산량",
+                            "expected_output": "계획 생산량",
+                            "output_gap": "생산량 차이",
+                            "cycle_delay_sec": "Cycle 지연(초)",
+                            "pickup_error_count": "흡착 에러 수",
+                            "confidence": "신뢰도",
+                            "diagnosis_note": "해석",
+                        }
+                    )
+                    st.dataframe(machine_view[["설비", "실제 생산량", "계획 생산량", "생산량 차이", "Cycle 지연(초)", "흡착 에러 수", "신뢰도", "해석"]], use_container_width=True, hide_index=True)
+                elif not material_context.empty:
+                    st.dataframe(material_context.head(8), use_container_width=True, hide_index=True)
+                else:
+                    st.info("설비 상세 데이터가 없습니다.")
+            return
+
+        if view_type == "cause_material":
+            event_mix = diagnosis["event_mix"].copy()
+            material_context = data["material_context"].copy()
+            left, right = st.columns(2)
+            with left:
+                if not event_mix.empty:
+                    event_view = event_mix.melt(
+                        id_vars="machine_id",
+                        value_vars=["pickup_error_count", "recognition_error_count", "mechanical_error_count"],
+                        var_name="error_type",
+                        value_name="error_count",
+                    )
+                    event_view["error_type"] = event_view["error_type"].map(
+                        {
+                            "pickup_error_count": "흡착 에러",
+                            "recognition_error_count": "인식 에러",
+                            "mechanical_error_count": "기계 에러",
+                        }
+                    )
+                    event_view = event_view.rename(columns={"machine_id": "설비", "error_count": "에러 수"})
+                    fig = px.bar(event_view, x="설비", y="에러 수", color="error_type", barmode="group", title="설비별 에러 유형 비교")
+                    st.plotly_chart(fig, use_container_width=True, key="ai_demo_cause_material_event_mix")
+                else:
+                    st.info("에러 유형 비교 데이터가 없습니다.")
+            with right:
+                if not material_context.empty:
+                    material_view = (
+                        material_context.groupby(["machine_id", "feeder_id", "nozzle_id", "part_number"], as_index=False)
+                        .agg(pickup_error_count=("pickup_error_count", "sum"))
+                        .sort_values("pickup_error_count", ascending=False)
+                        .head(8)
+                        .rename(
+                            columns={
+                                "machine_id": "설비",
+                                "feeder_id": "피더",
+                                "nozzle_id": "노즐",
+                                "part_number": "부품",
+                                "pickup_error_count": "흡착 에러 수",
+                            }
+                        )
+                    )
+                    st.dataframe(material_view, use_container_width=True, hide_index=True)
+                elif not causes.empty:
+                    cause_view = causes[["rank", "cause_category", "hypothesis", "confidence", "evidence"]].rename(
+                        columns={"rank": "순위", "cause_category": "원인 범주", "hypothesis": "가설", "confidence": "신뢰도", "evidence": "근거"}
+                    )
+                    st.dataframe(cause_view, use_container_width=True, hide_index=True)
+                else:
+                    st.info("원인 후보 데이터가 없습니다.")
+            return
+
         if view_type == "quality_lot":
             quality_time = bundle["quality"]["quality_time"].copy()
+            defect_mix = bundle["quality"]["defect_mix"].copy()
             lot_summary = bundle["lots"]["lot_summary"].copy()
             left, right = st.columns(2)
             with left:
                 if not quality_time.empty:
                     fig = px.line(quality_time, x="timestamp", y="aoi_fail_count", markers=True, title="AOI 불량 추이")
-                    st.plotly_chart(fig, use_container_width=True)
+                    st.plotly_chart(fig, use_container_width=True, key="ai_demo_quality_lot_quality_time")
+                    if not defect_mix.empty:
+                        defect_view = defect_mix.rename(columns={"defect_type": "불량 유형", "defect_count": "불량 수"})
+                        st.dataframe(defect_view, use_container_width=True, hide_index=True)
                 else:
                     st.info("품질 추이 데이터가 없습니다.")
             with right:
@@ -366,43 +493,36 @@ def render_ai_demo_tab() -> None:
                     st.info("LOT 비교 데이터가 없습니다.")
             return
 
-        machine_rank = diagnosis["machine_rank"].copy()
-        material_context = data["material_context"].copy()
-        left, right = st.columns(2)
-        with left:
-            if not machine_rank.empty:
-                fig = px.bar(
-                    machine_rank.head(6),
-                    x="machine_id",
-                    y="output_gap",
-                    color="cycle_delay_sec",
-                    text="output_gap",
-                    title="설비별 생산 차이",
-                )
-                st.plotly_chart(fig, use_container_width=True)
-            else:
-                st.info("설비 비교 데이터가 없습니다.")
-        with right:
-            if not material_context.empty:
-                material_view = (
-                    material_context.groupby(["machine_id", "feeder_id", "part_number"], as_index=False)
-                    .agg(
-                        pickup_error_count=("pickup_error_count", "sum"),
-                        feeder_error_count=("feeder_error_count", "sum"),
-                        nozzle_error_count=("nozzle_error_count", "sum"),
+        if view_type == "action_plan":
+            action_rows = [
+                {"우선순위": 1, "조치 항목": f"실장기 {top_machine['machine_id']} 설비를 가장 먼저 점검" if top_machine is not None else "상위 설비를 가장 먼저 점검", "목적": "설비 국소 이상 여부 확인"},
+                {"우선순위": 2, "조치 항목": "핵심 피더 정렬 상태 확인", "목적": "흡착 관련 집중 여부 검증"},
+                {"우선순위": 3, "조치 항목": "핵심 노즐 상태 점검", "목적": "노즐 마모 또는 오염 배제"},
+                {"우선순위": 4, "조치 항목": "핵심 부품 공급 안정성 확인", "목적": "자재 조건이 손실을 만들었는지 확인"},
+                {"우선순위": 5, "조치 항목": "영향 LOT와 직전 LOT 비교", "목적": "영향이 국소적인지 확산형인지 확인"},
+            ]
+            left, right = st.columns(2)
+            with left:
+                st.dataframe(pd.DataFrame(action_rows), use_container_width=True, hide_index=True)
+            with right:
+                if not causes.empty:
+                    cause_view = causes[["rank", "cause_category", "hypothesis", "confidence"]].rename(
+                        columns={"rank": "순위", "cause_category": "원인 범주", "hypothesis": "가설", "confidence": "신뢰도"}
                     )
-                    .sort_values(["pickup_error_count", "feeder_error_count"], ascending=False)
-                    .head(8)
-                )
-                st.dataframe(material_view, use_container_width=True, hide_index=True)
-            else:
-                st.info("피더/파트 비교 데이터가 없습니다.")
+                    st.dataframe(cause_view, use_container_width=True, hide_index=True)
+                else:
+                    st.info("조치 우선순위 근거 데이터가 없습니다.")
+            return
+
+        st.info("관련 데이터를 구성할 수 없습니다.")
 
     st.markdown("#### 질문")
-    st.markdown(f"- {final_question}")
-    if final_question_key != "custom":
-        source_tab = next((item["tab_label"] for item in tab_questions if item["tab_key"] == final_question_key), "-")
+    st.markdown(f"- {question}")
+    if question_key != "custom":
+        source_tab = next((item["tab_label"] for item in tab_questions if item["tab_key"] == question_key), "-")
         st.caption(f"질문 출처: 원인분석(샘플 시나리오) > {source_tab}")
+    elif custom_question.strip():
+        st.caption("질문 출처: 직접 질문")
     st.markdown("#### 답변")
     st.markdown(answer)
     if llm_answer and llm_model:
