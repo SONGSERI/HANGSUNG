@@ -5070,56 +5070,6 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
             with col:
                 st.markdown(_card(label, value, foot), unsafe_allow_html=True)
 
-        st.markdown("#### 우선 점검 대상")
-        primary_machine = top_machine.iloc[0] if not top_machine.empty else pd.Series(dtype=object)
-        secondary_process = top_process.iloc[0] if not top_process.empty else pd.Series(dtype=object)
-        secondary_lot = top_lot.iloc[0] if not top_lot.empty else pd.Series(dtype=object)
-        left, right = st.columns([0.58, 0.42])
-        with left:
-            if not primary_machine.empty:
-                st.markdown(
-                    f"""
-                    <div style="padding:1.15rem 1.2rem;border-radius:18px;background:linear-gradient(135deg,#1f2937,#0f172a);border:1px solid rgba(148,163,184,.22);box-shadow:0 14px 30px rgba(15,23,42,.14)">
-                        <div style="font-size:.82rem;color:#cbd5e1;">메인 점검 축</div>
-                        <div style="font-size:1.6rem;font-weight:800;color:#f8fafc;margin:.2rem 0 .3rem 0;">{primary_machine.get("machine_id", "-")}</div>
-                        <div style="font-size:.95rem;color:#f8c77d;font-weight:700;">설비 우선 점검</div>
-                        <div style="font-size:.85rem;color:#d8dee8;margin-top:.4rem;">{primary_machine.get("reasoning", "-")}</div>
-                        <div style="font-size:.83rem;color:#9fd0ff;margin-top:.45rem;">권장 조치: {primary_machine.get("recommended_action", "-")}</div>
-                    </div>
-                    """,
-                    unsafe_allow_html=True,
-                )
-            else:
-                st.info("우선 점검 설비를 정리할 데이터가 없습니다.")
-        with right:
-            secondary_rows = []
-            if not secondary_process.empty:
-                secondary_rows.append({
-                    "보조 축": "공정 영향",
-                    "대상": secondary_process.get("process_display", "-"),
-                    "의미": secondary_process.get("reasoning", "-"),
-                })
-            if not secondary_lot.empty:
-                secondary_rows.append({
-                    "보조 축": "LOT 영향",
-                    "대상": secondary_lot.get("lot_id", "-"),
-                    "의미": secondary_lot.get("reasoning", "-"),
-                })
-            if secondary_rows:
-                st.dataframe(pd.DataFrame(secondary_rows), use_container_width=True, hide_index=True)
-            else:
-                st.info("보조 축을 정리할 데이터가 없습니다.")
-
-        priority_rows = []
-        if not primary_machine.empty:
-            priority_rows.append({"우선순위": 1, "구분": "메인", "대상": primary_machine.get("machine_id", "-"), "문제유형": primary_machine.get("problem_type", "-"), "근거": primary_machine.get("reasoning", "-"), "조치": primary_machine.get("recommended_action", "-")})
-        if not secondary_process.empty:
-            priority_rows.append({"우선순위": 2, "구분": "보조", "대상": secondary_process.get("process_display", "-"), "문제유형": secondary_process.get("problem_type", "-"), "근거": secondary_process.get("reasoning", "-"), "조치": secondary_process.get("recommended_action", "-")})
-        if not secondary_lot.empty:
-            priority_rows.append({"우선순위": 3, "구분": "보조", "대상": secondary_lot.get("lot_id", "-"), "문제유형": secondary_lot.get("problem_type", "-"), "근거": secondary_lot.get("reasoning", "-"), "조치": secondary_lot.get("recommended_action", "-")})
-        if priority_rows:
-            st.dataframe(pd.DataFrame(priority_rows), use_container_width=True, hide_index=True)
-
         st.markdown("#### 행동형 인사이트")
         ic1, ic2, ic3 = st.columns(3)
         insight_data = [
@@ -5423,6 +5373,50 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
     else:
         feeder_rank_view = pd.DataFrame()
 
+    if not feeder_rank_view.empty:
+        machine_benchmark = (
+            feeder_rank_view.groupby("machine_id", as_index=False)
+            .agg(machine_error_count=("error_count", "sum"), machine_pickup_count=("pickup_count", "sum"))
+        )
+        machine_benchmark["same_machine_error_rate"] = machine_benchmark.apply(
+            lambda r: _safe_div(r.get("machine_error_count", 0), max(r.get("machine_pickup_count", 0), 1)),
+            axis=1,
+        )
+        overall_error_rate = _safe_div(
+            float(pd.to_numeric(feeder_rank_view.get("error_count", 0), errors="coerce").fillna(0).sum()),
+            max(float(pd.to_numeric(feeder_rank_view.get("pickup_count", 0), errors="coerce").fillna(0).sum()), 1.0),
+        )
+        feeder_rank_view = feeder_rank_view.merge(
+            machine_benchmark[["machine_id", "same_machine_error_rate"]],
+            on="machine_id",
+            how="left",
+        )
+        feeder_rank_view["all_error_rate"] = overall_error_rate
+        feeder_rank_view["vs_same_machine_gap_pct"] = feeder_rank_view["error_rate"] - feeder_rank_view["same_machine_error_rate"]
+        feeder_rank_view["vs_all_gap_pct"] = feeder_rank_view["error_rate"] - feeder_rank_view["all_error_rate"]
+        feeder_rank_view["vs_same_machine_x"] = feeder_rank_view.apply(
+            lambda r: _safe_div(r.get("error_rate", 0), max(r.get("same_machine_error_rate", 0), 1e-9)),
+            axis=1,
+        )
+        feeder_rank_view["vs_all_x"] = feeder_rank_view.apply(
+            lambda r: _safe_div(r.get("error_rate", 0), max(r.get("all_error_rate", 0), 1e-9)),
+            axis=1,
+        )
+        feeder_rank_view["비교요약"] = feeder_rank_view.apply(
+            lambda r: (
+                f"설비평균 대비 {r.get('vs_same_machine_x', 0):.1f}배 "
+                f"({r.get('vs_same_machine_gap_pct', 0) * 100:+.2f}%p), "
+                f"전체평균 대비 {r.get('vs_all_x', 0):.1f}배 "
+                f"({r.get('vs_all_gap_pct', 0) * 100:+.2f}%p)"
+            ),
+            axis=1,
+        )
+        feeder_rank_view["현재 에러율"] = feeder_rank_view["error_rate"].map(lambda v: f"{float(v) * 100:.2f}%")
+        feeder_rank_view["동일 설비 평균"] = feeder_rank_view["same_machine_error_rate"].map(lambda v: f"{float(v) * 100:.2f}%")
+        feeder_rank_view["전체 평균"] = feeder_rank_view["all_error_rate"].map(lambda v: f"{float(v) * 100:.2f}%")
+        feeder_rank_view["설비 대비"] = feeder_rank_view["vs_same_machine_x"].map(lambda v: f"{float(v):.1f}배")
+        feeder_rank_view["전체 대비"] = feeder_rank_view["vs_all_x"].map(lambda v: f"{float(v):.1f}배")
+
     top_machine_row = machine_anomaly.iloc[0] if not machine_anomaly.empty else pd.Series(dtype=object)
     top_stage_row = stage_anomaly.iloc[0] if not stage_anomaly.empty else pd.Series(dtype=object)
     top_feeder_row = feeder_anomaly.iloc[0] if not feeder_anomaly.empty else pd.Series(dtype=object)
@@ -5520,13 +5514,13 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
     with left:
         if not feeder_rank_view.empty:
             st.caption(f"현재 조건에서 비교 가능한 피더/파트 조합은 {len(feeder_rank_view)}건이며, 표는 상위 10건을 보여줍니다.")
-            error_cols = [c for c in ["machine_id", "lot_id", "part_number", "feeder_id", "nozzle_serial", "error_domain", "error_rate", "error_count", "pickup_count", "판정", "우선순위", "즉시조치"] if c in feeder_rank_view.columns]
+            error_cols = [c for c in ["machine_id", "lot_id", "part_number", "feeder_id", "nozzle_serial", "error_domain", "현재 에러율", "동일 설비 평균", "전체 평균", "설비 대비", "전체 대비", "error_count", "pickup_count", "판정", "비교요약", "우선순위", "즉시조치"] if c in feeder_rank_view.columns]
             st.dataframe(feeder_rank_view[error_cols].head(10), use_container_width=True, hide_index=True)
         else:
             st.info("피더/파트 원인 후보 데이터가 없습니다.")
     with right:
-        if not feeder_anomaly.empty:
-            plot_df = feeder_anomaly.head(8).copy()
+        if not feeder_rank_view.empty:
+            plot_df = feeder_rank_view.head(10).copy()
             plot_df["조합"] = plot_df["feeder_id"].astype(str) + " / " + plot_df["part_number"].astype(str)
             fig = px.bar(plot_df, x="조합", y="error_rate", text="error_rate", color="error_domain")
             st.plotly_chart(_plot_style(fig, "피더/파트 에러율", 300), use_container_width=True)
