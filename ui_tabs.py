@@ -2783,9 +2783,151 @@ def render_rca(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.DataFrame], s
     top5["rank"] = np.arange(1, len(top5) + 1)
     top5["impact_summary"] = top5.apply(lambda r: f"{r.get('impact_value', 0):.2f} {r.get('impact_unit', '-')}", axis=1)
     top5["recurrence_summary"] = top5.apply(lambda r: f"repeat {int(r.get('repeat_count', 0))} / lot {int(r.get('affected_lot_count', 0))} / bucket {int(r.get('affected_time_bucket_count', 0))}", axis=1)
+    pickup_peak_series = pd.to_numeric(top5["pickup_peak"], errors="coerce").fillna(0) if "pickup_peak" in top5.columns else pd.Series(0.0, index=top5.index)
+    top5["chart_label"] = top5.apply(
+        lambda r: f"#{int(r.get('rank', 0))} {r.get('path_id', '-')}" if pd.notna(r.get("rank")) else str(r.get("path_id", "-")),
+        axis=1,
+    )
+    top5["stop_loss_sec"] = np.where(top5["metric_family"].astype(str).eq("stop_time"), pd.to_numeric(top5["impact_value"], errors="coerce").fillna(0), 0.0)
+    top5["quality_impact_count"] = np.where(
+        top5["metric_family"].astype(str).isin(["defect_count", "quality_lag"]),
+        pd.to_numeric(top5["impact_value"], errors="coerce").fillna(0),
+        0.0,
+    )
+    top5["pickup_instability"] = np.where(
+        top5["metric_family"].astype(str).eq("pickup_error_rate"),
+        pd.to_numeric(top5["impact_value"], errors="coerce").fillna(0),
+        pickup_peak_series,
+    )
+    top5["route_overlap"] = np.where(
+        top5["metric_family"].astype(str).eq("route_link"),
+        pd.to_numeric(top5["impact_value"], errors="coerce").fillna(0),
+        pd.to_numeric(top5["affected_time_bucket_count"], errors="coerce").fillna(0),
+    )
+    top5["lot_spread"] = pd.to_numeric(top5["affected_lot_count"], errors="coerce").fillna(0)
+    top5["recurrence_strength"] = pd.to_numeric(top5["repeat_count"], errors="coerce").fillna(0)
+    top5["alignment_pct"] = pd.to_numeric(top5["alignment_with_primary_issue"], errors="coerce").fillna(0) * 100
+    top5["priority_pct"] = pd.to_numeric(top5["route_priority_score"], errors="coerce").fillna(0) * 100
+
+    metric_candidates = {
+        "정지 손실": top5["stop_loss_sec"],
+        "품질 영향": top5["quality_impact_count"],
+        "반복성": top5["recurrence_strength"],
+        "LOT 확산": top5["lot_spread"],
+        "대표 이슈 정합성": top5["alignment_pct"],
+    }
+    for metric_name, metric_series in metric_candidates.items():
+        max_value = float(metric_series.max()) if len(metric_series) else 0.0
+        top5[f"{metric_name}_점수"] = metric_series.apply(lambda v: _safe_div(v, max_value) * 100 if max_value > 0 else 0.0)
+
+    bottleneck_score_cols = ["정지 손실_점수", "품질 영향_점수", "반복성_점수", "LOT 확산_점수", "대표 이슈 정합성_점수"]
+    top5["bottleneck_index"] = (
+        top5["정지 손실_점수"] * 0.34
+        + top5["품질 영향_점수"] * 0.22
+        + top5["반복성_점수"] * 0.18
+        + top5["LOT 확산_점수"] * 0.10
+        + top5["대표 이슈 정합성_점수"] * 0.16
+    )
+
+    def _dominant_bottleneck(row: pd.Series) -> str:
+        stop_score = float(row.get("정지 손실_점수", 0))
+        quality_score = float(row.get("품질 영향_점수", 0))
+        flow_score = float(row.get("반복성_점수", 0)) * 0.55 + float(row.get("LOT 확산_점수", 0)) * 0.45
+        pickup_score = max(float(row.get("pickup_instability", 0)) * 100, float(row.get("대표 이슈 정합성_점수", 0)) * 0.85)
+        candidates = {
+            "정지 병목": stop_score,
+            "품질 병목": quality_score,
+            "흐름 병목": flow_score,
+            "실장 불안정": pickup_score,
+        }
+        return max(candidates.items(), key=lambda item: item[1])[0]
+
+    def _smt_action_point(row: pd.Series) -> str:
+        dominant = str(row.get("dominant_bottleneck", ""))
+        if dominant == "정지 병목":
+            return f"stop {float(row.get('stop_loss_sec', 0)):.0f}초가 가장 커 즉시 정지 원인 로그 확인"
+        if dominant == "품질 병목":
+            return f"AOI 영향 {float(row.get('quality_impact_count', 0)):.0f}건으로 하류 격리 판단 필요"
+        if dominant == "흐름 병목":
+            return f"반복 {int(row.get('recurrence_strength', 0))}회, LOT {int(row.get('lot_spread', 0))}개로 라인 밸런스 확인"
+        return f"pickup 축 정합성 {float(row.get('alignment_pct', 0)):.0f}점으로 feeder/nozzle 우선 점검"
+
+    top5["dominant_bottleneck"] = top5.apply(_dominant_bottleneck, axis=1)
+    top5["smt_action_point"] = top5.apply(_smt_action_point, axis=1)
 
     st.markdown("#### A. TOP 5 추적 우선 경로")
-    st.caption("대표 경로를 깊게 보기 전에, 먼저 추적해야 할 5개 경로를 보여줍니다.")
+    st.caption("대표 경로를 깊게 보기 전에, SMT 공정 관점에서 어느 경로가 정지·품질·흐름 병목을 만드는지 먼저 비교합니다.")
+
+    chart_cols = st.columns([1.2, 1.0])
+    with chart_cols[0]:
+        compare_heatmap = top5[["chart_label"] + bottleneck_score_cols].copy()
+        compare_heatmap = compare_heatmap.rename(
+            columns={
+                "정지 손실_점수": "정지 손실",
+                "품질 영향_점수": "품질 영향",
+                "반복성_점수": "반복성",
+                "LOT 확산_점수": "LOT 확산",
+                "대표 이슈 정합성_점수": "대표 이슈 정합성",
+            }
+        )
+        heatmap_matrix = compare_heatmap.set_index("chart_label")[["정지 손실", "품질 영향", "반복성", "LOT 확산", "대표 이슈 정합성"]]
+        fig_heatmap = go.Figure(
+            data=go.Heatmap(
+                z=heatmap_matrix.values,
+                x=list(heatmap_matrix.columns),
+                y=list(heatmap_matrix.index),
+                colorscale=[
+                    [0.0, "#f8efe3"],
+                    [0.35, "#f7c58d"],
+                    [0.65, "#ef8a3d"],
+                    [1.0, "#b45309"],
+                ],
+                zmin=0,
+                zmax=100,
+                text=np.round(heatmap_matrix.values, 0),
+                texttemplate="%{text:.0f}",
+                hovertemplate="경로 %{y}<br>%{x}: %{z:.1f}점<extra></extra>",
+                colorbar=dict(title="병목 강도", ticksuffix="점"),
+            )
+        )
+        fig_heatmap.update_layout(xaxis_title="비교 축", yaxis_title="경로")
+        st.plotly_chart(_plot_style(fig_heatmap, "Top5 병목 비교 맵", 340), use_container_width=True)
+        st.caption("해석 기준: 값이 높을수록 해당 경로가 그 축에서 더 강한 병목 신호를 보입니다.")
+
+    with chart_cols[1]:
+        priority_plot = top5.sort_values(["bottleneck_index", "priority_pct"], ascending=True).copy()
+        fig_priority = px.bar(
+            priority_plot,
+            x="bottleneck_index",
+            y="chart_label",
+            color="dominant_bottleneck",
+            orientation="h",
+            text="priority_pct",
+            title="Top5 추적 우선순위와 병목 타입",
+            color_discrete_map={
+                "정지 병목": "#c2410c",
+                "품질 병목": "#dc2626",
+                "흐름 병목": "#0369a1",
+                "실장 불안정": "#2563eb",
+            },
+        )
+        fig_priority.update_traces(texttemplate="우선순위 %{text:.0f}점", textposition="outside")
+        fig_priority.update_layout(xaxis_title="종합 병목 지수", yaxis_title="경로", showlegend=True)
+        st.plotly_chart(_plot_style(fig_priority, "Top5 추적 우선순위와 병목 타입", 340), use_container_width=True)
+        st.caption("해석 기준: 막대가 길수록 먼저 추적해야 하며, 색은 먼저 확인할 병목 성격을 뜻합니다.")
+
+    top_route = top5.sort_values(["bottleneck_index", "priority_pct"], ascending=False).iloc[0]
+    gap_vs_second = float(top_route.get("bottleneck_index", 0)) - float(top5.sort_values(["bottleneck_index", "priority_pct"], ascending=False).iloc[1].get("bottleneck_index", 0)) if len(top5) > 1 else 0.0
+    st.markdown(
+        "\n".join(
+            [
+                f"- 최우선 경로는 `{top_route.get('path_id', '-')}`이며, 현재 판정은 `{top_route.get('dominant_bottleneck', '-')}`입니다.",
+                f"- 이 경로는 정지 {float(top_route.get('stop_loss_sec', 0)):.0f}초, 품질 영향 {float(top_route.get('quality_impact_count', 0)):.0f}건, 반복 {int(top_route.get('recurrence_strength', 0))}회로 다른 후보 대비 차이가 큽니다.",
+                f"- 2위 경로와의 병목 지수 차이는 {gap_vs_second:.1f}점이며, 우선 액션은 {top_route.get('smt_action_point', '-') }입니다.",
+            ]
+        )
+    )
+
     top5_view = top5.rename(
         columns={
             "path_id": "경로",
@@ -2796,15 +2938,17 @@ def render_rca(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.DataFrame], s
             "impact_summary": "영향 값",
             "repeat_count": "반복 횟수",
             "path_confidence": "신뢰도",
+            "dominant_bottleneck": "병목 판정",
+            "smt_action_point": "SMT 우선 확인",
             "selection_reason": "선정 이유",
         }
     )
     st.dataframe(
-        top5_view[["rank", "경로", "경로 의미", "주요 위치", "when", "주요 증상", "영향 유형", "영향 값", "반복 횟수", "신뢰도", "선정 이유"]],
+        top5_view[["rank", "경로", "경로 의미", "주요 위치", "when", "주요 증상", "영향 유형", "영향 값", "반복 횟수", "병목 판정", "신뢰도", "SMT 우선 확인", "선정 이유"]],
         use_container_width=True,
         hide_index=True,
     )
-    st.caption("요약: 상위 5개 경로가 모두 M05 / Stage-1 / LOT002 축과 연결돼 있어 문제진단 및 원인분석과 같은 시나리오를 유지합니다.")
+    st.caption("요약: 상위 5개 경로를 병목 타입까지 같이 보여주므로, 어느 경로가 정지 병목인지 품질 병목인지 바로 구분할 수 있습니다.")
 
     representative = top5[top5["cause_family"].astype(str).eq("pickup")].head(1)
     representative = representative if not representative.empty else top5.head(1)
@@ -4370,8 +4514,9 @@ def _render_equipment_screen_legacy(clean: Dict[str, pd.DataFrame], marts: Dict[
 
 def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.DataFrame], mode: str = "full"):
     item = clean.get("vw_mounter_item_fact", pd.DataFrame()).copy()
+    is_full_flow = mode == "full"
     st.markdown('<div class="box">', unsafe_allow_html=True)
-    if mode in {"full", "overview"}:
+    if mode == "overview":
         st.markdown("### 2. 문제 진단")
         st.caption("이 탭은 고객이 가장 궁금해하는 '어디가 먼저 문제인지'를 빠르게 찾기 위한 화면입니다. 설비, 공정, LOT 중 어디를 먼저 봐야 하는지 우선순위를 제시합니다.")
         _story_box(
@@ -4380,6 +4525,18 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
                 "생산량이 떨어지거나 흐름이 흔들리는 구간을 먼저 찾습니다.",
                 "문제가 한 설비의 국소 이슈인지, 여러 공정과 LOT로 번지는 이슈인지 구분합니다.",
                 "최종적으로 현장에서 먼저 점검할 대상을 좁혀주는 것이 목적입니다.",
+            ],
+            tone="dark",
+        )
+    elif is_full_flow:
+        st.markdown("### 2. 이상치 분석 기반 문제 진단")
+        st.caption("데이터 설명 다음에 이상치를 먼저 찾고, 그 근거를 그대로 이어서 고객이 이해할 수 있는 문제 진단 시나리오로 정리합니다.")
+        _story_box(
+            "이 화면의 진행 순서",
+            [
+                "먼저 설비, 공정, 피더/파트에서 기준을 벗어난 이상치를 찾습니다.",
+                "그 다음 이상치가 같은 날짜·설비·공정 축에서 서로 연결되는지 확인합니다.",
+                "마지막으로 연결된 근거만 남겨 고객이 이해할 수 있는 문제 진단 시나리오로 설명합니다.",
             ],
             tone="dark",
         )
@@ -5056,7 +5213,7 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
     top_process = process.sort_values("bottleneck_score", ascending=False).head(1)
     top_lot = lot.sort_values("priority_score", ascending=False).head(1)
 
-    if mode in {"full", "overview"}:
+    if mode == "overview":
         summary_cards = [
             ("총 출력", f"{int(filtered['output_qty'].sum()):,}", "mounter output 합계"),
             ("설비 수", f"{filtered['machine_id'].nunique():,}" if "machine_id" in filtered.columns else "0", "활성 설비"),
@@ -5117,7 +5274,7 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
                     unsafe_allow_html=True,
                 )
 
-    if mode in {"full", "overview"}:
+    if mode == "overview":
         st.markdown(_section_header("전체 문제 요약", "설비 / 공정 / LOT 중 어디가 먼저 문제인지 한눈에 보는 구역", PRIMARY), unsafe_allow_html=True)
         left, right = st.columns([0.55, 0.45])
         with left:
@@ -5146,7 +5303,7 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
                     fig = px.bar(hour_view.sort_values("bucket_order" if "bucket_order" in hour_view.columns else "hour"), x="bucket" if "bucket" in hour_view.columns else "hour", y="output_qty", text="output_qty")
                     st.plotly_chart(_plot_style(fig, "시간대별 출력", 330), use_container_width=True)
 
-    if mode in {"full", "overview"}:
+    if mode == "overview":
         st.markdown(_section_header("설비별 문제 분석", "출력량, cycle 변동, 점유율로 설비를 분류합니다.", SECONDARY), unsafe_allow_html=True)
         left, right = st.columns([0.56, 0.44])
         with left:
@@ -5177,7 +5334,7 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
             st.markdown("- 출력 점유율이 크면 특정 설비에 부하가 집중된 것입니다.")
             st.markdown("- 다음 확인: 상위 설비의 line/stage 조합과 동일 LOT 분포입니다.")
 
-    if mode in {"full", "overview"}:
+    if mode == "overview":
         st.markdown(_section_header("공정별 병목 분석", "라인/Stage 단위의 출력과 변동성을 봅니다.", PRIMARY), unsafe_allow_html=True)
         left, right = st.columns([0.56, 0.44])
         with left:
@@ -5204,7 +5361,7 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
             st.markdown("- machine_count가 크면 해당 공정에 장비가 몰려 있는 것입니다.")
             st.markdown("- 다음 확인: stage별 전환 구간과 같은 lot의 분산입니다.")
 
-    if mode in {"full", "overview"}:
+    if mode == "overview":
         st.markdown(_section_header("LOT 영향 분석", "한 LOT이 얼마나 넓게 퍼지는지 봅니다.", SECONDARY), unsafe_allow_html=True)
         left, right = st.columns([0.56, 0.44])
         with left:
@@ -5231,7 +5388,7 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
             st.markdown("- machine_count 또는 stage_count가 넓으면 전파 LOT입니다.")
             st.markdown("- 다음 확인: 대표 설비와 대표 stage입니다.")
 
-    if mode in {"full", "overview"}:
+    if mode == "overview":
         st.markdown(_section_header("개선 우선순위", "먼저 개선해야 할 대상 순서입니다.", PRIMARY), unsafe_allow_html=True)
         priority_rows = []
         if not machine.empty:
@@ -5275,17 +5432,16 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
         ])
         st.dataframe(action_map, use_container_width=True, hide_index=True)
 
-        if mode == "overview":
-            st.markdown("</div>", unsafe_allow_html=True)
-            return
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
 
     st.markdown(_section_header("이상치 기준 설정", "어떤 수준부터 이상으로 볼지 먼저 정합니다.", PRIMARY), unsafe_allow_html=True)
     _story_box(
         "이 탭의 분석 시나리오",
         [
             "먼저 이상치 기준을 정하고, 생산성과 공정 흐름이 흔들리는 설비를 찾습니다.",
-            "그 다음 피더와 파트 조합을 연결해 어떤 설비가 원인 후보인지 좁힙니다.",
-            "마지막으로 즉시 조치와 예방 조치를 구분해 현장 실행 순서까지 정리합니다.",
+            "그 다음 피더와 파트 조합을 연결해 같은 축에서 반복되는 이상 후보만 남깁니다.",
+            "마지막으로 이 이상치를 근거로 문제 진단 시나리오를 만들고 즉시 조치와 예방 조치를 구분합니다.",
         ],
         tone="accent",
     )
@@ -5558,6 +5714,148 @@ def render_equipment_screen(clean: Dict[str, pd.DataFrame], marts: Dict[str, pd.
     else:
         st.markdown("- 현재 기준에서는 강한 이상 설비가 제한적입니다.")
     st.markdown("- 이 탭의 목적은 이상치를 보여주는 것이 아니라, 어떤 설비와 피더/파트를 먼저 점검할지 결정하는 것입니다.")
+
+    if is_full_flow:
+        st.markdown(_section_header("5. AI 학습 데이터셋 구성", "이상치 분석 결과를 문제유형, 원인, 조치 학습 데이터로 정리하는 단계입니다.", PRIMARY), unsafe_allow_html=True)
+        scenario_machine = str(top_machine_row.get("machine_id", "-")) if not top_machine_row.empty else "-"
+        scenario_stage = str(top_stage_row.get("process_display", "-")) if not top_stage_row.empty else "-"
+        scenario_lot = str(top_feeder_row.get("lot_id", top_lot.iloc[0].get("lot_id", "-") if not top_lot.empty else "-"))
+        scenario_part = (
+            f"{top_feeder_row.get('feeder_id', '-')} / {top_feeder_row.get('part_number', '-')}"
+            if not top_feeder_row.empty
+            else "-"
+        )
+        scenario_day = (
+            str(top_machine_row.get("day", top_stage_row.get("day", "-")))
+            if (not top_machine_row.empty or not top_stage_row.empty)
+            else "-"
+        )
+        scenario_summary = [
+            "1. 이상치 탐지: 생산 차이, 택타임, 에러율 기준으로 이상 이벤트를 찾습니다.",
+            "2. 라벨링: 각 이상 이벤트를 문제유형, 원인 후보, 조치안으로 정리합니다.",
+            "3. 학습셋 적재: 같은 형식의 사례를 계속 누적해 AI가 비교 학습할 수 있게 만듭니다.",
+            "4. 고객 설명: 새 이상이 나오면 과거 학습 사례와 연결해 가장 이해하기 쉬운 시나리오로 설명합니다.",
+        ]
+        _story_box("AI 학습용 구성 시나리오", scenario_summary, tone="accent")
+
+        evidence_rows = [
+            {
+                "단계": "이상치 탐지",
+                "설명": f"{scenario_day} 기준 `{scenario_machine}` 설비가 생산성과 택타임에서 가장 먼저 기준을 벗어났습니다.",
+                "학습 필드": "이상치 근거",
+                "저장 값": f"생산 차이 {top_machine_row.get('output_gap_pct', 0) * 100:.1f}% / 택타임 차이 {top_machine_row.get('takt_gap_sec', 0):.1f}초" if not top_machine_row.empty else "강한 설비 이상 없음",
+                "고객 해석": "AI가 어떤 조건을 이상으로 볼지 학습하는 시작점입니다.",
+            },
+            {
+                "단계": "문제유형 라벨",
+                "설명": f"`{scenario_stage}` 공정이 같은 기준에서 흔들리면 설비 국소 이슈인지 공정 흐름 이슈인지 분류합니다.",
+                "학습 필드": "문제유형",
+                "저장 값": top_stage_row.get("problem_type", top_machine_row.get("problem_type", "분류 대기")) if (not top_stage_row.empty or not top_machine_row.empty) else "분류 대기",
+                "고객 해석": "AI가 이번 건을 어떤 유형의 문제로 볼지 학습하는 단계입니다.",
+            },
+            {
+                "단계": "원인 라벨",
+                "설명": f"`{scenario_part}` 조합이 `{scenario_machine}` 설비와 연결되면 원인 후보로 기록합니다.",
+                "학습 필드": "원인",
+                "저장 값": top_feeder_row.get("error_domain", top_feeder_foot if top_feeder_foot else "원인 후보 없음") if not top_feeder_row.empty else "원인 후보 없음",
+                "고객 해석": "AI가 비슷한 이상치에서 어떤 원인을 먼저 의심할지 학습하는 단계입니다.",
+            },
+            {
+                "단계": "조치 라벨",
+                "설명": f"대표 LOT `{scenario_lot}`까지 영향 범위를 본 뒤 현장에서 실행할 조치를 정리합니다.",
+                "학습 필드": "조치",
+                "저장 값": top_feeder_row.get("즉시조치", top_machine_row.get("recommended_action", top_stage_row.get("recommended_action", "조치 정의 필요"))) if (not top_feeder_row.empty or not top_machine_row.empty or not top_stage_row.empty) else "조치 정의 필요",
+                "고객 해석": "AI가 문제유형과 원인에 맞는 조치를 추천하도록 학습하는 단계입니다.",
+            },
+        ]
+        st.dataframe(pd.DataFrame(evidence_rows), use_container_width=True, hide_index=True)
+
+        learning_rows = []
+        if not top_machine.empty:
+            for _, row in top_machine.iterrows():
+                learning_rows.append({"구분": "설비", "대상": row.get("machine_id", "-"), "문제유형": row.get("problem_type", "-"), "원인": row.get("reasoning", "-"), "조치": row.get("recommended_action", "-"), "학습점수": row.get("bottleneck_score", 0)})
+        if not top_process.empty:
+            for _, row in top_process.iterrows():
+                learning_rows.append({"구분": "공정", "대상": row.get("process_display", "-"), "문제유형": row.get("problem_type", "-"), "원인": row.get("reasoning", "-"), "조치": row.get("recommended_action", "-"), "학습점수": row.get("bottleneck_score", 0)})
+        if not top_lot.empty:
+            for _, row in top_lot.iterrows():
+                learning_rows.append({"구분": "LOT", "대상": row.get("lot_id", "-"), "문제유형": row.get("problem_type", "-"), "원인": row.get("reasoning", "-"), "조치": row.get("recommended_action", "-"), "학습점수": row.get("priority_score", 0)})
+        learning_df = pd.DataFrame(learning_rows)
+        if not learning_df.empty:
+            learning_df = learning_df.sort_values("학습점수", ascending=False).reset_index(drop=True)
+            learning_df["샘플순번"] = np.arange(1, len(learning_df) + 1)
+            st.markdown("#### AI 학습 데이터셋 예시")
+            st.dataframe(learning_df[["샘플순번", "구분", "대상", "문제유형", "원인", "조치"]], use_container_width=True, hide_index=True)
+
+            st.markdown("#### AI 이상치 사전 알림 흐름")
+            st.caption("고객 설명 포인트: 현재 예시 데이터셋이 학습으로 끝나는 것이 아니라, 실시간 공정 중 위험 점수를 계산해 사전 알림을 주는 운영 흐름으로 이어집니다.")
+
+            learning_count = int(len(learning_df))
+            machine_target = scenario_machine
+            process_target = scenario_stage
+            lot_target = scenario_lot
+            cause_target = scenario_part
+            action_target = top_feeder_row.get("즉시조치", top_machine_row.get("recommended_action", top_stage_row.get("recommended_action", "현장 점검"))) if (not top_feeder_row.empty or not top_machine_row.empty or not top_stage_row.empty) else "현장 점검"
+
+            flow_nodes = [
+                f"1. 학습 데이터셋 적재<br>{learning_count}개 사례 / 문제유형·원인·조치",
+                "2. 특징 추출·모델 학습<br>설비, 공정, LOT, takt, error rate",
+                f"3. 실시간 공정 점수화<br>{machine_target} / {process_target} / {lot_target}",
+                f"4. 사전 알림 발행<br>{cause_target} 이상 징후 감지",
+                f"5. 작업자 조치·재학습<br>{action_target}",
+            ]
+            flow_links = pd.DataFrame(
+                [
+                    {"source": 0, "target": 1, "value": max(learning_count, 1), "label": "라벨링 사례 누적"},
+                    {"source": 1, "target": 2, "value": max(learning_count, 1), "label": "모델 기준 배포"},
+                    {"source": 2, "target": 3, "value": max(1, int(top_machine_row.get("bottleneck_score", 1) if not top_machine_row.empty else 1)), "label": "실시간 anomaly score"},
+                    {"source": 3, "target": 4, "value": max(1, int(top_feeder_row.get("error_count", 1) if not top_feeder_row.empty else 1)), "label": "알림 후 조치"},
+                ]
+            )
+            fig_flow = go.Figure(
+                data=[
+                    go.Sankey(
+                        arrangement="snap",
+                        node=dict(
+                            pad=22,
+                            thickness=26,
+                            line=dict(color="rgba(15,23,42,0.18)", width=1),
+                            label=flow_nodes,
+                            color=["#1d4ed8", "#0f766e", "#b45309", "#dc2626", "#475569"],
+                            hovertemplate="%{label}<extra></extra>",
+                        ),
+                        link=dict(
+                            source=flow_links["source"],
+                            target=flow_links["target"],
+                            value=flow_links["value"],
+                            label=flow_links["label"],
+                            color=["rgba(37,99,235,0.22)", "rgba(15,118,110,0.22)", "rgba(180,83,9,0.22)", "rgba(220,38,38,0.24)"],
+                            hovertemplate="%{label}<extra></extra>",
+                        ),
+                    )
+                ]
+            )
+            st.plotly_chart(_plot_style(fig_flow, "학습 데이터셋 기반 이상치 사전 알림 운영 흐름", 380), use_container_width=True)
+
+            flow_explain = pd.DataFrame(
+                [
+                    {"운영 단계": "학습 데이터셋", "현재 예시": f"{learning_count}개 라벨 사례", "고객이 이해할 포인트": "과거 이상치와 현장 조치를 구조화해 AI가 기준을 배웁니다."},
+                    {"운영 단계": "모델 학습", "현재 예시": "설비/공정/LOT/택타임/에러율 특징", "고객이 이해할 포인트": "단순 임계치가 아니라 복합 패턴으로 이상 가능성을 계산합니다."},
+                    {"운영 단계": "실시간 추론", "현재 예시": f"{machine_target} / {process_target} / {lot_target} 스트림 점수화", "고객이 이해할 포인트": "공정이 진행되는 중간에도 위험 점수를 계속 계산합니다."},
+                    {"운영 단계": "사전 알림", "현재 예시": f"{cause_target} 이상 징후 발생 시 알림", "고객이 이해할 포인트": "불량 확정 후가 아니라 병목과 품질 악화 전에 작업자에게 먼저 알려줍니다."},
+                    {"운영 단계": "조치 및 재학습", "현재 예시": action_target, "고객이 이해할 포인트": "현장 조치 결과를 다시 저장해 다음 알림 정확도를 높입니다."},
+                ]
+            )
+            st.dataframe(flow_explain, use_container_width=True, hide_index=True)
+            st.markdown(
+                "\n".join(
+                    [
+                        f"- 고객 메시지 1: 지금 보는 `AI 학습 데이터셋 예시`는 보고서용 테이블이 아니라, 실시간 사전 알림 모델의 학습 원본입니다.",
+                        f"- 고객 메시지 2: 예를 들어 `{machine_target}` 설비에서 `{cause_target}` 패턴이 다시 올라오면, 불량 확정 전에 작업자에게 먼저 알릴 수 있습니다.",
+                        "- 고객 메시지 3: 알림 이후 실제 조치 결과까지 다시 쌓으면, 시간이 갈수록 현장에 맞는 조치 추천 정확도가 올라갑니다.",
+                    ]
+                )
+            )
 
     st.markdown("</div>", unsafe_allow_html=True)
 

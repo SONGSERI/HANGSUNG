@@ -90,12 +90,8 @@ def main():
     with tabs[0]:
         mount_source = raw_mount.get("_meta", {}).get("source", "unknown") if isinstance(raw_mount.get("_meta", {}), dict) else "unknown"
         st.caption(f"이 탭은 {mount_tab_date} 기준 고정 데이터를 사용합니다. 현재 소스는 `{mount_source}`이며, 2026-03-14 데이터는 정합성 이슈로 제외했습니다.")
-        inner_tabs = st.tabs(["데이터 이해 · 문제진단", "이상치 분석"])
-        with inner_tabs[0]:
-            render_summary(raw_mount, clean_mount, marts_mount, sample)
-            render_equipment_screen(clean_mount, marts_mount, mode="overview")
-        with inner_tabs[1]:
-            render_equipment_screen(clean_mount, marts_mount, mode="anomaly")
+        render_summary(raw_mount, clean_mount, marts_mount, sample)
+        render_equipment_screen(clean_mount, marts_mount, mode="full")
     with tabs[1]:
         render_rca(rca_source, rca_marts, rca_sample_mode)
     with tabs[2]:
